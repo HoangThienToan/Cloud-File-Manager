@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  buckets  Bucket[]
+  files    File[]
+  folders  Folder[]
+  shares   Share[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Bucket {
+  id        String   @id @default(cuid())
+  name      String   @unique // bucket name (slug-friendly)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("buckets")
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  path      String
+  parentId  String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     File[]
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children  Folder[] @relation("FolderHierarchy")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, parentId])
+  @@index([userId, path])
+  @@index([name])
+  @@index([createdAt])
+  @@map("folders")
+}
+
+model File {
+  id            String   @id @default(cuid())
+  name          String
+  originalName  String
+  storageName   String?
+  mimeType      String
+  size          Int
+  path          String
+  folderId      String?
+  userId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder        Folder?  @relation(fields: [folderId], references: [id])
+  shares        Share[]
+  
+  @@index([userId, folderId])
+  @@index([userId, name])
+  @@index([mimeType])
+  @@index([size])
+  @@index([createdAt])
+  @@map("files")
+}
+
+model Share {
+  id           String    @id @default(cuid())
+  token        String    @unique
+  fileId       String
+  userId       String
+  expiresAt    DateTime?
+  downloads    Int       @default(0)
+  maxDownloads Int?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  file         File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([fileId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isActive])
+  @@map("shares")
+}
