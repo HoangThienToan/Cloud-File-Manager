@@ -7,9 +7,7 @@ import { z } from 'zod'
 
 const registerSchema = z.object({
   email: z.string().email(),
-  username: z.string().min(3).max(20),
-  password: z.string().min(6),
-  fullName: z.string().optional()
+  password: z.string().min(6)
 })
 
 async function registerHandler(request: NextRequest) {
@@ -17,16 +15,11 @@ async function registerHandler(request: NextRequest) {
   
   try {
     const body = await request.json()
-    const { email, username, password, fullName } = registerSchema.parse(body)
+    const { email, password } = registerSchema.parse(body)
 
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email },
-          { username }
-        ]
-      }
+      where: { email }
     })
 
     if (existingUser) {
@@ -34,10 +27,10 @@ async function registerHandler(request: NextRequest) {
         ...requestContext, 
         event: 'Registration attempt with existing credentials', 
         severity: 'low',
-        metadata: { email, username }
+        metadata: { email }
       });
       return NextResponse.json(
-        { error: 'User with this email or username already exists' },
+        { error: 'User with this email already exists' },
         { status: 400 }
       )
     }

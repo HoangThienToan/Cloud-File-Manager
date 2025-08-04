@@ -2,7 +2,6 @@ import React from "react";
 import { Item } from "./types";
 import Breadcrumb from "./Breadcrumb";
 import ContextMenu from "./ContextMenu";
-// import FileTableNew from "./FileTableNew";
 import FolderTreeNode from "./FolderTreeNode";
 
 interface FileManagerLayoutProps {
@@ -1289,46 +1288,6 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
             </div>
           )}
         </div>
-        
-        {/* FileTableNew 
-          items={props.items}
-          enableMultiSelect={props.enableMultiSelect}
-          selectedItems={props.selectedItems}
-          isSelected={props.isSelected}
-          handleSelect={props.handleSelect}
-          handleSelectAll={props.handleSelectAll}
-          renaming={props.renaming}
-          setRenaming={props.setRenaming}
-          renameInputRef={props.renameInputRef}
-          setError={props.setError}
-          fetchItems={props.fetchItems}
-          currentFolder={props.currentFolder}
-          setCurrentFolder={props.setCurrentFolder}
-          getFileIcon={getFileIcon}
-          onShowModal={() => {}}
-          onToggleMultiSelect={(enabled) => {
-            if (props.setEnableMultiSelect) {
-              props.setEnableMultiSelect(enabled);
-            }
-          }}
-          onDelete={(ids) => {
-            ids.forEach(id => {
-              const item = props.items.find(i => i.id === id);
-              if (item) {
-                props.handleDelete(id);
-              }
-            });
-          }}
-          onDownload={(item) => {
-            const downloadUrl = `/api/file-public?id=${item.id}`;
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = item.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }}
-        */}
       </div>
 
       {/* Floating action button for create folder */}
