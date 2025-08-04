@@ -54,6 +54,7 @@ export default function HomePage() {
               handleUpload={fileManager.handleUpload}
               handleDelete={fileManager.handleDelete}
               setContextMenu={fileManager.setContextMenu}
+              contextMenu={fileManager.contextMenu}
             />
           </AppLayout>
         </ErrorBoundary>
