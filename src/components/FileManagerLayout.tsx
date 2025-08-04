@@ -48,6 +48,8 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'name' | 'size' | 'date'>('name');
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
+  const [showKeyboardHelp, setShowKeyboardHelp] = React.useState(false);
+  const [isDragOver, setIsDragOver] = React.useState(false);
 
   // Filter and sort items based on search and sort settings
   const filteredAndSortedItems = React.useMemo(() => {
@@ -79,6 +81,11 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent shortcuts when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       // Ctrl+A to select all
       if (e.ctrlKey && e.key === 'a' && props.enableMultiSelect) {
         e.preventDefault();
@@ -94,18 +101,104 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
         }
       }
       
-      // Escape to clear selection
+      // Escape to clear selection or search
       if (e.key === 'Escape') {
-        props.setSelectedItems([]);
+        if (props.selectedItems.length > 0) {
+          props.setSelectedItems([]);
+        } else if (searchTerm) {
+          setSearchTerm('');
+        }
         if (props.setContextMenu) {
           props.setContextMenu(null);
         }
+      }
+
+      // Ctrl+F to focus search
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="Tìm kiếm"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+
+      // V key to toggle view mode
+      if (e.key === 'v' || e.key === 'V') {
+        setViewMode(prev => prev === 'list' ? 'grid' : 'list');
+      }
+
+      // M key to toggle multi-select
+      if (e.key === 'm' || e.key === 'M') {
+        props.setEnableMultiSelect(!props.enableMultiSelect);
+      }
+
+      // Number keys for sorting
+      if (e.key === '1') setSortBy('name');
+      if (e.key === '2') setSortBy('size');
+      if (e.key === '3') setSortBy('date');
+      
+      // R key to reverse sort order
+      if (e.key === 'r' || e.key === 'R') {
+        setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+      }
+
+      // F1 key to show help
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setShowKeyboardHelp(true);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [props.enableMultiSelect, props.selectedItems, props.handleSelectAll, props.handleDelete, props.setSelectedItems, props.setContextMenu]);
+  }, [props.enableMultiSelect, props.selectedItems, props.handleSelectAll, props.handleDelete, props.setSelectedItems, props.setContextMenu, searchTerm, props.setEnableMultiSelect]);
+
+  // Enhanced Drag and Drop functionality
+  React.useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only hide if leaving the main container
+      if (e.target === document.documentElement || e.relatedTarget === null) {
+        setIsDragOver(false);
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+
+      const files = Array.from(e.dataTransfer?.files || []);
+      if (files.length > 0 && props.fileInputRef?.current) {
+        // Create a new DataTransfer object to simulate file input
+        const dt = new DataTransfer();
+        files.forEach(file => dt.items.add(file));
+        props.fileInputRef.current.files = dt.files;
+        
+        // Trigger the upload
+        const event = new Event('change', { bubbles: true });
+        props.fileInputRef.current.dispatchEvent(event);
+      }
+    };
+
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('dragleave', handleDragLeave);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('dragleave', handleDragLeave);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, [props.fileInputRef]);
 
   // File type icon mapping
   const getFileIcon = (item: any) => {
@@ -234,20 +327,27 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
           props.setDragSelecting(false);
           
           const files = Array.from(e.dataTransfer.files);
-          if (files.length > 0 && props.fileInputRef.current) {
-            // Create a new FileList and assign to input
+          if (files.length > 0 && props.fileInputRef?.current) {
             const dt = new DataTransfer();
-            files.forEach(file => dt.items.add(file));
+            files.forEach((file: File) => dt.items.add(file));
             props.fileInputRef.current.files = dt.files;
             
-            // Trigger upload
-            const form = props.fileInputRef.current.closest('form');
-            if (form) {
-              props.handleUpload({ preventDefault: () => {}, target: form } as any);
-            }
+            // Trigger the upload
+            const event = new Event('change', { bubbles: true });
+            props.fileInputRef.current.dispatchEvent(event);
           }
         }}
       >
+        {/* Enhanced Drag overlay for file upload */}
+        {(isDragOver || props.dragSelecting) && (
+          <div className="absolute inset-0 bg-blue-500/20 border-4 border-dashed border-blue-500 rounded-lg flex items-center justify-center z-40 backdrop-blur-sm">
+            <div className="text-center p-6 bg-white rounded-xl shadow-lg border-2 border-blue-500">
+              <div className="text-5xl mb-3 animate-bounce">📁</div>
+              <div className="text-xl font-bold text-blue-700 mb-1">Thả tệp vào đây</div>
+              <div className="text-blue-600 text-sm">Để tải lên vào thư mục hiện tại</div>
+            </div>
+          </div>
+        )}
         {/* Drag overlay for file upload */}
         <div
           className="absolute inset-0 bg-blue-500/20 border-2 border-dashed border-blue-500 rounded-lg flex items-center justify-center text-blue-700 font-semibold text-lg opacity-0 pointer-events-none transition-opacity"
@@ -299,6 +399,151 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
             </div>
           </div>
         )}
+
+        {/* Enhanced Toolbar */}
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg border">
+          {/* Left side - View controls */}
+          <div className="flex items-center gap-4">
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-white rounded-lg p-1 shadow-sm border">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+                title="Chế độ danh sách"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+                title="Chế độ lưới"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Multi-select toggle */}
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <input
+                type="checkbox"
+                checked={props.enableMultiSelect}
+                onChange={(e) => props.setEnableMultiSelect(e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Chọn nhiều</span>
+            </label>
+
+            {/* Selected items indicator */}
+            {props.enableMultiSelect && props.selectedItems.length > 0 && (
+              <div className="flex items-center gap-3 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
+                <span className="text-sm font-medium">{props.selectedItems.length} đã chọn</span>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Bạn có chắc muốn xóa các mục đã chọn?')) {
+                      props.selectedItems.forEach(id => props.handleDelete(id));
+                      props.setSelectedItems([]);
+                    }
+                  }}
+                  className="text-sm px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                >
+                  Xóa tất cả
+                </button>
+                <button
+                  onClick={() => props.setSelectedItems([])}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                  title="Bỏ chọn tất cả"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Right side - Search and Sort */}
+          <div className="flex items-center gap-3">
+            {/* Sort dropdown */}
+            <div className="relative">
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split('-') as [typeof sortBy, typeof sortOrder];
+                  setSortBy(newSortBy);
+                  setSortOrder(newSortOrder);
+                }}
+                className="pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              >
+                <option value="name-asc">Tên A-Z</option>
+                <option value="name-desc">Tên Z-A</option>
+                <option value="size-asc">Kích thước ↑</option>
+                <option value="size-desc">Kích thước ↓</option>
+                <option value="date-asc">Cũ nhất</option>
+                <option value="date-desc">Mới nhất</option>
+              </select>
+              <svg className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+              </svg>
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Tìm kiếm tệp..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-10 py-2 w-64 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Xóa tìm kiếm"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Results info */}
+            <div className="text-sm text-gray-500">
+              {searchTerm ? (
+                `${filteredAndSortedItems.length} kết quả`
+              ) : (
+                `${props.items.length} mục`
+              )}
+            </div>
+
+            {/* Help button */}
+            <button
+              onClick={() => setShowKeyboardHelp(true)}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Phím tắt (F1)"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         {/* Breadcrumb navigation */}
         <Breadcrumb
@@ -369,132 +614,6 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
         
         {/* File & Folder table */}
         <div className="mt-4">
-          {/* Enhanced Toolbar */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              {/* Left side - View mode and multi-select */}
-              <div className="flex items-center gap-4">
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'list' 
-                        ? 'bg-white text-blue-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="Chế độ danh sách"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'grid' 
-                        ? 'bg-white text-blue-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="Chế độ lưới"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Multi-select toggle */}
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={props.enableMultiSelect}
-                    onChange={(e) => props.setEnableMultiSelect(e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <span>Chọn nhiều</span>
-                </label>
-
-                {/* Selected items info */}
-                {props.enableMultiSelect && props.selectedItems.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">
-                    <span>Đã chọn {props.selectedItems.length} mục</span>
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Bạn có chắc muốn xóa các tệp đã chọn?')) {
-                          props.selectedItems.forEach(id => props.handleDelete(id));
-                          props.setSelectedItems([]);
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-800 ml-2 font-medium"
-                    >
-                      Xóa tất cả
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Right side - Search and sort */}
-              <div className="flex items-center gap-4">
-                {/* Sort options */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Sắp xếp:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'name' | 'size' | 'date')}
-                    className="text-sm border border-gray-300 rounded px-2 py-1"
-                  >
-                    <option value="name">Tên</option>
-                    <option value="size">Kích thước</option>
-                    <option value="date">Ngày</option>
-                  </select>
-                  <button
-                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    className="p-1 text-gray-600 hover:text-gray-800"
-                    title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {sortOrder === 'asc' ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      )}
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Search */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                  <svg
-                    className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm('')}
-                      className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 hover:text-gray-600"
-                    >
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* File Content */}
           {viewMode === 'list' ? (
             /* Simple Table for now - Advanced FileTableNew temporarily disabled */
@@ -817,6 +936,97 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         </button>
+      )}
+
+      {/* Keyboard Shortcuts Help Modal */}
+      {showKeyboardHelp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[80vh] overflow-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Phím tắt</h3>
+                <button
+                  onClick={() => setShowKeyboardHelp(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2">Điều hướng & Chọn</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Chọn tất cả</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+A</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Xóa đã chọn</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Delete</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Bỏ chọn / Thoát</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Esc</kbd>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2">Tìm kiếm & Lọc</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Tìm kiếm</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+F</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sắp xếp theo tên</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">1</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sắp xếp theo kích thước</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">2</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sắp xếp theo ngày</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">3</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Đảo thứ tự</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">R</kbd>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2">Chế độ xem</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Chuyển chế độ xem</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">V</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Chế độ chọn nhiều</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">M</kbd>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Hiện trợ giúp</span>
+                      <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">F1</kbd>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t">
+                  <p className="text-xs text-gray-500">
+                    💡 Mẹo: Giữ Ctrl và click để chọn nhiều mục, hoặc Shift+Click để chọn dải mục
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

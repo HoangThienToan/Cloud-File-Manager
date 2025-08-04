@@ -41,13 +41,31 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onClose, items }) => {
   }, [onClose]);
 
   // Adjust position if menu would go off screen
-  const adjustedX = Math.min(x, window.innerWidth - 220);
+  const adjustedX = Math.min(x, window.innerWidth - 250);
   const adjustedY = Math.min(y, window.innerHeight - (items.length * 45));
 
   const getItemColors = (item: any) => {
     if (item.disabled) {
-      return 'text-gray-400 cursor-not-allowed';
+      return 'text-gray-400 cursor-not-allowed bg-gray-50';
     }
+    
+    if (item.danger) {
+      return 'text-red-600 hover:text-red-700 hover:bg-red-50';
+    }
+
+    switch (item.color) {
+      case 'blue':
+        return 'text-blue-600 hover:text-blue-700 hover:bg-blue-50';
+      case 'green':
+        return 'text-green-600 hover:text-green-700 hover:bg-green-50';
+      case 'orange':
+        return 'text-orange-600 hover:text-orange-700 hover:bg-orange-50';
+      case 'purple':
+        return 'text-purple-600 hover:text-purple-700 hover:bg-purple-50';
+      default:
+        return 'text-gray-700 hover:text-gray-900 hover:bg-gray-100';
+    }
+  };
     
     if (item.danger || item.color === 'red') {
       return 'text-red-600 hover:bg-red-50 hover:text-red-700';

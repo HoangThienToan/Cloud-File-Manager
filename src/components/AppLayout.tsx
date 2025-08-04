@@ -3,7 +3,6 @@ import Header from './Header';
 import QuickActionsPanel from './QuickActionsPanel';
 import StatusBar from './StatusBar';
 import { NotificationContainer } from './NotificationSystem';
-// import BucketCreateModal from './BucketCreateModal';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -114,44 +113,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
               <div className={`w-2 h-2 rounded-full ${storageUsed / storageTotal > 0.8 ? 'bg-red-500' : 'bg-green-500'}`}></div>
               <span className="text-sm">{storageUsed}GB / {storageTotal}GB</span>
             </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => {
-                  if ((window as any).showBucketCreateModal) {
-                    (window as any).showBucketCreateModal();
-                  }
-                }}
-                className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-                title="Tạo bucket để chia sẻ file công khai"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                Tạo Bucket
-              </button>
-            
-              <button 
-                onClick={onCreateFolder}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Tạo thư mục
-              </button>
-              
-              <button 
-                onClick={onUpload}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                Tải lên
-              </button>
-            </div>
           </div>
         }
       />
@@ -199,21 +160,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                       5
                     </span>
                   </button>
-                  <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
-                    isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}>
-                    <svg className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    Yêu thích
-                    <span className={`ml-auto text-xs px-2 py-1 rounded-full ${
-                      isDarkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-600'
-                    }`}>
-                      2
-                    </span>
-                  </button>
+
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
                     isDarkMode 
                       ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
@@ -232,7 +179,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>
-                  Truy cập nhanh
+                  Loại tệp
                 </h3>
                 <div className="space-y-1">
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
@@ -242,7 +189,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                   }`}>
                     <span className="text-lg">📁</span>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">Documents</div>
+                      <div className="text-sm font-medium">Tài liệu</div>
                       <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>42 tệp</div>
                     </div>
                   </button>
@@ -253,7 +200,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                   }`}>
                     <span className="text-lg">🖼️</span>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">Images</div>
+                      <div className="text-sm font-medium">Hình ảnh</div>
                       <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>128 tệp</div>
                     </div>
                   </button>
@@ -262,10 +209,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                       ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}>
-                    <span className="text-lg">🎵</span>
+                    <span className="text-lg">📦</span>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">Music</div>
-                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>67 tệp</div>
+                      <div className="text-sm font-medium">Nén</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>15 tệp</div>
                     </div>
                   </button>
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
@@ -282,46 +229,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 </div>
               </div>
 
-              {/* Recent files */}
-              <div className="mb-6">
-                <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}>
-                  Gần đây
-                </h3>
-                <div className="space-y-2">
-                  <div className={`p-2 rounded-lg transition-colors ${
-                    isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">📄</span>
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-xs font-medium truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          Report_2025.pdf
-                        </div>
-                        <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                          2 giờ trước
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`p-2 rounded-lg transition-colors ${
-                    isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">🖼️</span>
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-xs font-medium truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          screenshot.png
-                        </div>
-                        <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                          1 ngày trước
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
             </nav>
 
             {/* Storage meter */}
@@ -417,25 +325,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         </main>
       </div>
 
-      {/* Quick Actions Panel */}
-      <QuickActionsPanel
-        isDarkMode={isDarkMode}
-        onUpload={onUpload}
-        onCreateFolder={onCreateFolder}
-        onCreateBucket={() => {
-          if ((window as any).showBucketCreateModal) {
-            (window as any).showBucketCreateModal();
-          }
-        }}
-      />
-
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`lg:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-200 hover:scale-110 ${
+        className={`lg:hidden fixed bottom-6 left-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-50 transition-all duration-200 hover:scale-110 ${
           isDarkMode 
-            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
+            ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+            : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
         }`}
         title={sidebarOpen ? 'Ẩn menu' : 'Hiện menu'}
       >
