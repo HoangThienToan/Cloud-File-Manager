@@ -44,6 +44,38 @@ interface FileManagerLayoutProps {
 }
 
 const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
+  const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list');
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [sortBy, setSortBy] = React.useState<'name' | 'size' | 'date'>('name');
+  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
+
+  // Filter and sort items based on search and sort settings
+  const filteredAndSortedItems = React.useMemo(() => {
+    let filtered = props.items.filter(item =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'size':
+          const aSize = a.type === 'file' ? (a as any).size || 0 : 0;
+          const bSize = b.type === 'file' ? (b as any).size || 0 : 0;
+          comparison = aSize - bSize;
+          break;
+        case 'date':
+          comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+          break;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [props.items, searchTerm, sortBy, sortOrder]);
+
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -337,133 +369,211 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
         
         {/* File & Folder table */}
         <div className="mt-4">
-          {/* Search and controls */}
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={props.enableMultiSelect}
-                  onChange={(e) => props.setEnableMultiSelect(e.target.checked)}
-                  className="rounded border-gray-300"
-                />
-                <span>Chọn nhiều tệp</span>
-              </label>
-              {props.enableMultiSelect && props.selectedItems.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>Đã chọn {props.selectedItems.length} mục</span>
+          {/* Enhanced Toolbar */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              {/* Left side - View mode and multi-select */}
+              <div className="flex items-center gap-4">
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
                   <button
-                    onClick={() => {
-                      if (window.confirm('Bạn có chắc muốn xóa các tệp đã chọn?')) {
-                        props.selectedItems.forEach(id => props.handleDelete(id));
-                        props.setSelectedItems([]);
-                      }
-                    }}
-                    className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded transition-colors ${
+                      viewMode === 'list' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="Chế độ danh sách"
                   >
-                    Xóa tất cả
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded transition-colors ${
+                      viewMode === 'grid' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="Chế độ lưới"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
                   </button>
                 </div>
-              )}
-            </div>
-            
-            {/* Quick search */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Tìm kiếm trong thư mục..."
-                className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                onChange={(e) => {
-                  // Simple client-side filter
-                  const searchTerm = e.target.value.toLowerCase();
-                  const rows = document.querySelectorAll('[data-item-id]');
-                  rows.forEach((row: any) => {
-                    const itemName = row.querySelector('span')?.textContent?.toLowerCase() || '';
-                    row.style.display = itemName.includes(searchTerm) ? '' : 'none';
-                  });
-                }}
-              />
-              <svg
-                className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50">
-                  {props.enableMultiSelect && (
-                    <th className="text-left p-3 border-b font-medium text-gray-700 w-12">
-                      <input
-                        type="checkbox"
-                        checked={props.items.length > 0 && props.selectedItems.length === props.items.length}
-                        onChange={(e) => props.handleSelectAll(e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                    </th>
-                  )}
-                  <th className="text-left p-3 border-b font-medium text-gray-700">Tên</th>
-                  <th className="text-left p-3 border-b font-medium text-gray-700">Kích thước</th>
-                  <th className="text-left p-3 border-b font-medium text-gray-700">Ngày sửa đổi</th>
-                  <th className="text-left p-3 border-b font-medium text-gray-700">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {props.items && props.items.length > 0 ? (
-                  props.items.map((item) => (
-                    <tr 
-                      key={item.id} 
-                      className={`hover:bg-gray-50 transition-colors ${props.isSelected(item.id) ? 'bg-blue-50' : ''}`}
-                      data-item-id={item.id}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        if (props.setContextMenu) {
-                          props.setContextMenu({
-                            x: e.clientX,
-                            y: e.clientY,
-                            item: item,
-                            selectedItems: props.selectedItems.includes(item.id) ? 
-                              props.selectedItems.map(id => props.items.find(i => i.id === id)).filter(Boolean) : 
-                              [item]
-                          });
+
+                {/* Multi-select toggle */}
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={props.enableMultiSelect}
+                    onChange={(e) => props.setEnableMultiSelect(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <span>Chọn nhiều</span>
+                </label>
+
+                {/* Selected items info */}
+                {props.enableMultiSelect && props.selectedItems.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">
+                    <span>Đã chọn {props.selectedItems.length} mục</span>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Bạn có chắc muốn xóa các tệp đã chọn?')) {
+                          props.selectedItems.forEach(id => props.handleDelete(id));
+                          props.setSelectedItems([]);
                         }
                       }}
+                      className="text-red-600 hover:text-red-800 ml-2 font-medium"
                     >
-                      {props.enableMultiSelect && (
-                        <td className="p-3 border-b">
-                          <input
-                            type="checkbox"
-                            checked={props.isSelected(item.id)}
-                            onChange={(e) => props.handleSelect(item.id, e)}
-                            className="rounded border-gray-300"
-                          />
-                        </td>
+                      Xóa tất cả
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Right side - Search and sort */}
+              <div className="flex items-center gap-4">
+                {/* Sort options */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Sắp xếp:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'name' | 'size' | 'date')}
+                    className="text-sm border border-gray-300 rounded px-2 py-1"
+                  >
+                    <option value="name">Tên</option>
+                    <option value="size">Kích thước</option>
+                    <option value="date">Ngày</option>
+                  </select>
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="p-1 text-gray-600 hover:text-gray-800"
+                    title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {sortOrder === 'asc' ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       )}
-                      <td className="p-3 border-b">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{getFileIcon(item)}</span>
-                          <span 
-                            className={`truncate ${item.type === 'folder' ? 'text-blue-600 cursor-pointer hover:underline' : 'cursor-pointer hover:text-blue-600'}`}
-                            onClick={() => {
-                              if (item.type === 'folder' && props.setCurrentFolder) {
-                                props.setCurrentFolder(item.id);
-                              } else if (item.type === 'file') {
-                                // Preview file or download based on type
-                                const isPreviewable = item.mimeType?.startsWith('image/') || 
-                                                    item.mimeType?.startsWith('text/') ||
-                                                    item.mimeType === 'application/pdf';
-                                
-                                if (isPreviewable) {
-                                  // Open in new window for preview
-                                  window.open(`/api/file-public?id=${item.id}`, '_blank');
-                                } else {
-                                  // Direct download
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                  <svg
+                    className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 hover:text-gray-600"
+                    >
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* File Content */}
+          {viewMode === 'list' ? (
+            /* Simple Table for now - Advanced FileTableNew temporarily disabled */
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50">
+                    {props.enableMultiSelect && (
+                      <th className="text-left p-3 border-b font-medium text-gray-700 w-12">
+                        <input
+                          type="checkbox"
+                          checked={filteredAndSortedItems.length > 0 && props.selectedItems.length === filteredAndSortedItems.length}
+                          onChange={(e) => props.handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </th>
+                    )}
+                    <th className="text-left p-3 border-b font-medium text-gray-700">Tên</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">Kích thước</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">Ngày sửa đổi</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAndSortedItems.length > 0 ? (
+                    filteredAndSortedItems.map((item) => (
+                      <tr 
+                        key={item.id} 
+                        className={`hover:bg-gray-50 transition-colors ${props.isSelected(item.id) ? 'bg-blue-50' : ''}`}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          if (props.setContextMenu) {
+                            props.setContextMenu({
+                              x: e.clientX,
+                              y: e.clientY,
+                              item: item,
+                              selectedItems: props.selectedItems.includes(item.id) ? 
+                                props.selectedItems.map(id => props.items.find(i => i.id === id)).filter(Boolean) : 
+                                [item]
+                            });
+                          }
+                        }}
+                      >
+                        {props.enableMultiSelect && (
+                          <td className="p-3 border-b">
+                            <input
+                              type="checkbox"
+                              checked={props.isSelected(item.id)}
+                              onChange={(e) => props.handleSelect(item.id, e)}
+                              className="rounded border-gray-300"
+                            />
+                          </td>
+                        )}
+                        <td className="p-3 border-b">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{getFileIcon(item)}</span>
+                            <span 
+                              className={`truncate ${item.type === 'folder' ? 'text-blue-600 cursor-pointer hover:underline' : 'cursor-pointer hover:text-blue-600'}`}
+                              onClick={() => {
+                                if (item.type === 'folder') {
+                                  props.setCurrentFolder(item.id);
+                                }
+                              }}
+                            >
+                              {item.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-3 border-b text-sm text-gray-600">
+                          {item.type === 'folder' ? '—' : (item.type === 'file' && (item as any).size ? `${Math.round((item as any).size / 1024)} KB` : '—')}
+                        </td>
+                        <td className="p-3 border-b text-sm text-gray-600">
+                          {item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : '—'}
+                        </td>
+                        <td className="p-3 border-b">
+                          <div className="flex gap-2">
+                            {item.type === 'file' && (
+                              <button
+                                onClick={() => {
                                   const downloadUrl = `/api/file-public?id=${item.id}`;
                                   const link = document.createElement('a');
                                   link.href = downloadUrl;
@@ -471,70 +581,188 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
                                   document.body.appendChild(link);
                                   link.click();
                                   document.body.removeChild(link);
-                                }
-                              }
-                            }}
-                            title={item.type === 'file' ? 'Click để xem trước/tải xuống' : 'Click để mở thư mục'}
-                          >
-                            {item.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3 border-b text-sm text-gray-600">
-                        {item.type === 'folder' ? '—' : (item.size ? `${Math.round(item.size / 1024)} KB` : '—')}
-                      </td>
-                      <td className="p-3 border-b text-sm text-gray-600">
-                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : '—'}
-                      </td>
-                      <td className="p-3 border-b">
-                        <div className="flex gap-2">
-                          {item.type === 'file' && (
+                                }}
+                                className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50"
+                              >
+                                Tải xuống
+                              </button>
+                            )}
                             <button
                               onClick={() => {
-                                const downloadUrl = `/api/file-public?id=${item.id}`;
-                                const link = document.createElement('a');
-                                link.href = downloadUrl;
-                                link.download = item.name;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
+                                if (window.confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
+                                  props.handleDelete(item.id);
+                                }
                               }}
-                              className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50"
+                              className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50"
                             >
-                              Tải xuống
+                              Xóa
                             </button>
-                          )}
-                          <button
-                            onClick={() => {
-                              if (window.confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
-                                props.handleDelete(item.id);
-                              }
-                            }}
-                            className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50"
-                          >
-                            Xóa
-                          </button>
-                        </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={props.enableMultiSelect ? 5 : 4} className="p-8 text-center text-gray-500">
+                        {props.loading ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <span>Đang tải...</span>
+                          </div>
+                        ) : searchTerm ? (
+                          <div>
+                            <div className="text-4xl mb-4">🔍</div>
+                            <div className="text-gray-500 text-lg">Không tìm thấy kết quả</div>
+                            <div className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác</div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-6xl mb-4">📂</div>
+                            <div className="text-gray-500 text-lg">Thư mục trống</div>
+                            <div className="text-sm text-gray-400 mt-2">Kéa thả tệp vào đây hoặc sử dụng nút "Tải lên"</div>
+                          </div>
+                        )}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={props.enableMultiSelect ? 5 : 4} className="p-8 text-center text-gray-500">
-                      {props.loading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                          <span>Đang tải...</span>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* Grid View */
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {filteredAndSortedItems.length > 0 ? (
+                filteredAndSortedItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`relative group p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all cursor-pointer ${
+                      props.isSelected(item.id) ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' : 'hover:bg-gray-50'
+                    }`}
+                    onClick={(e) => {
+                      if (e.ctrlKey || e.metaKey) {
+                        props.handleSelect(item.id, e);
+                      } else if (item.type === 'folder') {
+                        props.setCurrentFolder(item.id);
+                      }
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (props.setContextMenu) {
+                        props.setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          item: item,
+                          selectedItems: props.selectedItems.includes(item.id) ? 
+                            props.selectedItems.map(id => props.items.find(i => i.id === id)).filter(Boolean) : 
+                            [item]
+                        });
+                      }
+                    }}
+                  >
+                    {/* Multi-select checkbox */}
+                    {props.enableMultiSelect && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <input
+                          type="checkbox"
+                          checked={props.isSelected(item.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            props.handleSelect(item.id, e);
+                          }}
+                          className="rounded border-gray-300"
+                        />
+                      </div>
+                    )}
+
+                    {/* File/Folder Icon */}
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">
+                        {getFileIcon(item)}
+                      </div>
+                      
+                      {/* File/Folder Name */}
+                      <div className="font-medium text-gray-800 text-sm truncate mb-1" title={item.name}>
+                        {item.name}
+                      </div>
+                      
+                      {/* File Size */}
+                      {item.type === 'file' && (item as any).size && (
+                        <div className="text-xs text-gray-500">
+                          {Math.round((item as any).size / 1024)} KB
                         </div>
-                      ) : (
-                        "Không có tệp tin hoặc thư mục nào"
                       )}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                      
+                      {/* Creation Date */}
+                      <div className="text-xs text-gray-400 mt-1">
+                        {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                      </div>
+                    </div>
+
+                    {/* Hover Actions */}
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1">
+                        {item.type === 'file' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const downloadUrl = `/api/file-public?id=${item.id}`;
+                              const link = document.createElement('a');
+                              link.href = downloadUrl;
+                              link.download = item.name;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                            className="p-1 bg-white bg-opacity-90 rounded shadow-sm text-blue-600 hover:text-blue-800"
+                            title="Tải xuống"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
+                              props.handleDelete(item.id);
+                            }
+                          }}
+                          className="p-1 bg-white bg-opacity-90 rounded shadow-sm text-red-600 hover:text-red-800"
+                          title="Xóa"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  {props.loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-gray-600">Đang tải...</span>
+                    </div>
+                  ) : searchTerm ? (
+                    <div>
+                      <div className="text-4xl mb-4">🔍</div>
+                      <div className="text-gray-500 text-lg">Không tìm thấy kết quả</div>
+                      <div className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-6xl mb-4">📂</div>
+                      <div className="text-gray-500 text-lg">Thư mục trống</div>
+                      <div className="text-sm text-gray-400 mt-2">Kéo thả tệp vào đây hoặc sử dụng nút "Tải lên"</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {/* FileTableNew 

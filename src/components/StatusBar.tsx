@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 
 interface StatusBarProps {
@@ -17,6 +18,31 @@ const StatusBar: React.FC<StatusBarProps> = ({
   currentPath = '',
   syncStatus = 'synced'
 }) => {
+  const [isOnline, setIsOnline] = React.useState(true);
+  const [currentTime, setCurrentTime] = React.useState(new Date());
+
+  React.useEffect(() => {
+    // Set initial online status
+    setIsOnline(navigator.onLine);
+
+    // Listen for online/offline events
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Update time every minute
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(timeInterval);
+    };
+  }, []);
   const getSyncIcon = () => {
     switch (syncStatus) {
       case 'syncing':
@@ -106,16 +132,16 @@ const StatusBar: React.FC<StatusBarProps> = ({
           {/* Connection status */}
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${
-              navigator.onLine ? 'bg-green-500' : 'bg-red-500'
+              isOnline ? 'bg-green-500' : 'bg-red-500'
             }`}></div>
             <span className="text-xs">
-              {navigator.onLine ? 'Trực tuyến' : 'Ngoại tuyến'}
+              {isOnline ? 'Trực tuyến' : 'Ngoại tuyến'}
             </span>
           </div>
 
           {/* Current time */}
           <div className="text-xs">
-            {new Date().toLocaleTimeString('vi-VN', {
+            {currentTime.toLocaleTimeString('vi-VN', {
               hour: '2-digit',
               minute: '2-digit'
             })}
