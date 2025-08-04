@@ -220,8 +220,8 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
         <div
           className="absolute inset-0 bg-blue-500/20 border-2 border-dashed border-blue-500 rounded-lg flex items-center justify-center text-blue-700 font-semibold text-lg opacity-0 pointer-events-none transition-opacity"
           style={{
-            opacity: props.dragSelecting && props.dragStart ? 1 : 0,
-            pointerEvents: props.dragSelecting && props.dragStart ? 'auto' : 'none'
+            opacity: props.dragSelecting ? 1 : 0,
+            pointerEvents: props.dragSelecting ? 'auto' : 'none'
           }}
         >
           <div className="text-center">
@@ -244,6 +244,7 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
             type="file"
             ref={props.fileInputRef}
             className="border rounded px-2 py-1 flex-1"
+            multiple
             required
           />
           <button
@@ -581,7 +582,7 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
       {!props.creatingFolder && (
         <button
           onClick={() => props.setCreatingFolder(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-colors"
+          className="fixed bottom-6 right-20 w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-colors"
           title="Tạo thư mục mới"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

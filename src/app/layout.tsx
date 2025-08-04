@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
+import { NotificationProvider } from "@/components/NotificationSystem";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,11 +38,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
         <ThemeProvider>
-          <ToastProvider>
-            <div className="relative min-h-screen bg-background">
-              {children}
-            </div>
-          </ToastProvider>
+          <NotificationProvider>
+            <ToastProvider>
+              <div className="relative min-h-screen bg-background">
+                {children}
+              </div>
+            </ToastProvider>
+          </NotificationProvider>
         </ThemeProvider>
       </body>
     </html>
