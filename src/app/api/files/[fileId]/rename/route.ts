@@ -13,14 +13,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { fileId
     const body = await request.json();
     const newName = (body.name || '').trim();
     const newPath = (body.path || '').trim();
-    // Lấy file hiện tại
+    // Get current file
     const file = await prisma.file.findUnique({ where: { id: fileId } });
     if (!file || file.userId !== user.id) {
-      return NextResponse.json({ error: 'Không tìm thấy tệp' }, { status: 404 });
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
-    // Đổi tên file
+    // Rename file
     if (newName && !newPath) {
-      // Kiểm tra trùng tên trong cùng folder
+      // Check duplicate name in same folder
       const dupFiles: { name: string }[] = await prisma.file.findMany({
         where: {
           userId: user.id,
@@ -37,29 +37,29 @@ export async function PATCH(request: NextRequest, { params }: { params: { fileId
       });
       const existsFolder = dupFolders.some((f: { name: string }) => f.name.trim().toLowerCase() === newName.toLowerCase());
       if (existsFolder) {
-        return NextResponse.json({ error: 'Đã có thư mục cùng tên trong thư mục này!' }, { status: 400 });
+        return NextResponse.json({ error: 'thư mục cùng tên' }, { status: 400 });
       }
       if (existsFile) {
-        return NextResponse.json({ error: 'Đã có tệp cùng tên trong thư mục này!' }, { status: 400 });
+        return NextResponse.json({ error: 'tệp cùng tên' }, { status: 400 });
       }
       await prisma.file.update({
         where: { id: fileId },
         data: { name: newName },
       });
-      return NextResponse.json({ message: 'Đổi tên thành công' });
+      return NextResponse.json({ message: 'Rename successful' });
     }
-    // Di chuyển file sang thư mục khác (theo path)
+    // Move file to another folder (by path)
     if (newPath) {
-      // Nếu path rỗng thì là thư mục gốc
+      // If path is empty then it's root folder
       let destFolderId: string | null = null;
       if (newPath !== '') {
         const destFolder = await prisma.folder.findFirst({ where: { userId: user.id, path: newPath } });
         if (!destFolder) {
-          return NextResponse.json({ error: 'Thư mục đích không tồn tại' }, { status: 400 });
+          return NextResponse.json({ error: 'Target folder not found' }, { status: 400 });
         }
         destFolderId = destFolder.id;
       }
-      // Kiểm tra trùng tên file trong thư mục đích
+      // Check duplicate file name in target folder
       const dupFiles: { name: string }[] = await prisma.file.findMany({
         where: {
           userId: user.id,
@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { fileId
         },
       });
       const existsFile = dupFiles.some((f: { name: string }) => f.name.trim().toLowerCase() === file.name.trim().toLowerCase());
-      // Kiểm tra trùng tên thư mục trong thư mục đích
+      // Check duplicate folder name in target folder
       const dupFolders: { name: string }[] = await prisma.folder.findMany({
         where: {
           userId: user.id,
@@ -77,20 +77,20 @@ export async function PATCH(request: NextRequest, { params }: { params: { fileId
       });
       const existsFolder = dupFolders.some((f: { name: string }) => f.name.trim().toLowerCase() === file.name.trim().toLowerCase());
       if (existsFolder) {
-        return NextResponse.json({ error: 'Đã có thư mục cùng tên trong thư mục đích!' }, { status: 400 });
+        return NextResponse.json({ error: 'thư mục cùng tên' }, { status: 400 });
       }
       if (existsFile) {
-        return NextResponse.json({ error: 'Đã có tệp cùng tên trong thư mục đích!' }, { status: 400 });
+        return NextResponse.json({ error: 'tệp cùng tên' }, { status: 400 });
       }
       await prisma.file.update({
         where: { id: fileId },
         data: { folderId: destFolderId },
       });
-      return NextResponse.json({ message: 'Di chuyển thành công' });
+      return NextResponse.json({ message: 'Move successful' });
     }
-    return NextResponse.json({ error: 'Yêu cầu không hợp lệ' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   } catch (error) {
     console.error('Rename file error:', error);
-    return NextResponse.json({ error: 'Đổi tên tệp thất bại' }, { status: 500 });
+    return NextResponse.json({ error: 'Rename file failed' }, { status: 500 });
   }
 }

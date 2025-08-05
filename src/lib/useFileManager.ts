@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { globalStateManager } from "./globalStateManager";
 import { useToast } from "../components/ToastProvider";
+import { translate } from "./i18n";
 
 export interface FileItem {
   id: string;
@@ -51,10 +52,20 @@ export function useFileManager(t?: (key: string) => string) {
   >(null);
   const [folderTree, setFolderTree] = useState<any[]>([]);
   const [breadcrumb, setBreadcrumb] = useState<Array<{ id: string | null; name: string }>>([
-    { id: null, name: '🏠 Trang chủ' }
+    { id: null, name: '🏠 Home' }
   ]);
   const lastSelectedIndexRef = useRef<number | null>(null);
   const lastFetchRef = useRef<string | null>(null);
+
+  // Update home breadcrumb with translation
+  useEffect(() => {
+    setBreadcrumb(prev => {
+      if (prev.length === 1 && prev[0].id === null) {
+        return [{ id: null, name: translate('fileManager.rootFolder') }];
+      }
+      return prev;
+    });
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -162,14 +173,14 @@ export function useFileManager(t?: (key: string) => string) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Không lấy được danh sách");
+      if (!res.ok) setError(data.error || translate('errors.cantGetList'));
       else {
         const folders: Item[] = (data.folders || []).map((f: FolderItem) => ({ ...f, type: 'folder' }));
         const files: Item[] = (data.files || []).map((f: FileItem) => ({ ...f, type: 'file', path: f.path }));
         setItems([...folders, ...files]);
       }
     } catch {
-      setError("Lỗi kết nối máy chủ");
+      setError(translate('common.connectionError'));
     } finally {
       setLoading(false);
     }
@@ -196,13 +207,13 @@ export function useFileManager(t?: (key: string) => string) {
   // Compute breadcrumb using useMemo to avoid unnecessary recalculations
   const computedBreadcrumb = useMemo(() => {
     if (currentFolder === null) {
-      return [{ id: null, name: '🏠 Trang chủ' }];
+      return [{ id: null, name: translate('fileManager.rootFolder') }];
     }
     
     // Build breadcrumb path from folderTree
     const buildBreadcrumb = (folderId: string | null, tree: any[], path: Array<{ id: string | null; name: string }> = []): Array<{ id: string | null; name: string }> => {
       if (folderId === null) {
-        return [{ id: null, name: '🏠 Trang chủ' }, ...path];
+        return [{ id: null, name: translate('fileManager.rootFolder') }, ...path];
       }
       
       for (const folder of tree) {
@@ -217,7 +228,7 @@ export function useFileManager(t?: (key: string) => string) {
           }
         }
       }
-      return [{ id: null, name: '🏠 Trang chủ' }, ...path];
+      return [{ id: null, name: translate('fileManager.rootFolder') }, ...path];
     };
     
     return buildBreadcrumb(currentFolder, folderTree);
@@ -260,14 +271,14 @@ export function useFileManager(t?: (key: string) => string) {
       (item) => item.name.trim().toLowerCase() === fileName.trim().toLowerCase() && item.type === 'folder'
     );
     if (existsFolder) {
-      setError('Đã có thư mục cùng tên trong thư mục này!');
+      setError(translate('errors.folderExists'));
       return;
     }
     const existsFile = items.some(
       (item) => item.name.trim().toLowerCase() === fileName.trim().toLowerCase() && item.type === 'file'
     );
     if (existsFile) {
-      setError('Đã có tệp cùng tên trong thư mục này!');
+      setError(translate('errors.fileExists'));
       return;
     }
     setUploading(true);
@@ -284,15 +295,15 @@ export function useFileManager(t?: (key: string) => string) {
       });
       const data = await res.json();
       if (!res.ok) {
-        if (data.error?.includes('thư mục cùng tên')) {
-          const errorMsg = 'Đã có thư mục cùng tên trong thư mục này!';
+        if (data.error?.includes('thư mục cùng tên') || data.error?.includes('folder with same name')) {
+          const errorMsg = translate('errors.folderExists');
           setError(errorMsg);
-          toast.error('Upload thất bại', errorMsg);
+          toast.error(translate('toast.uploadFailed'), errorMsg);
         }
-        else if (data.error?.includes('tệp cùng tên')) {
-          const errorMsg = 'Đã có tệp cùng tên trong thư mục này!';
+        else if (data.error?.includes('tệp cùng tên') || data.error?.includes('file with same name')) {
+          const errorMsg = translate('errors.fileExists');
           setError(errorMsg);
-          toast.error('Upload thất bại', errorMsg);
+          toast.error(translate('toast.uploadFailed'), errorMsg);
         }
         else if (data.error?.includes('File type not allowed')) {
           // Extract file details from error message for better user experience
@@ -305,26 +316,26 @@ export function useFileManager(t?: (key: string) => string) {
           const fileType = typeMatch ? typeMatch[1] : 'unknown';
           const fileExt = extMatch ? extMatch[1] : 'unknown';
           
-          const userFriendlyError = `Tệp "${fileName}" không được phép tải lên!`;
-          const detailedError = `Chi tiết:\n• Loại tệp: ${fileType}\n• Phần mở rộng: .${fileExt}\n\nCác loại tệp được phép: PDF, PNG, JPG, JPEG, GIF, WEBP, TXT, CSV, DOC, DOCX, XLS, XLSX, ZIP, RAR, 7Z, TAR, GZ, PPT, PPTX, MD\n\nLưu ý: Các tệp thực thi (.exe, .bat, .sh, .msi, .dll) và script (.js, .php, .py) không được phép vì lý do bảo mật.`;
+          const userFriendlyError = translate('toast.fileNotAllowed', { fileName });
+          const detailedError = translate('errors.fileTypeDetails', { fileType, fileExt });
           
           setError(userFriendlyError);
-          toast.error('Loại tệp không được phép', detailedError);
+          toast.error(translate('toast.fileTypeNotAllowed'), detailedError);
         }
         else {
-          const errorMsg = data.error || "Upload thất bại";
+          const errorMsg = data.error || translate('toast.uploadFailed');
           setError(errorMsg);
-          toast.error('Upload thất bại', errorMsg);
+          toast.error(translate('toast.uploadFailed'), errorMsg);
         }
       } else {
         setError(""); // Clear any previous errors
-        toast.success('Upload thành công', `Tệp "${fileInputRef.current.files[0].name}" đã được tải lên thành công!`);
+        toast.success(translate('toast.uploadSuccess'), translate('toast.fileUploadedSuccessfully', { fileName: fileInputRef.current.files[0].name }));
         fetchItems(currentFolder);
       }
     } catch {
-      const errorMsg = "Lỗi upload file";
+      const errorMsg = translate('toast.uploadError');
       setError(errorMsg);
-      toast.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng thử lại sau.');
+      toast.error(translate('toast.connectionError'), translate('toast.cantConnectToServer'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -343,7 +354,7 @@ export function useFileManager(t?: (key: string) => string) {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Download failed:', error);
-      alert("Không tải được file");
+      alert(translate('toast.cantDownloadFile'));
     }
   };
 
@@ -351,12 +362,12 @@ export function useFileManager(t?: (key: string) => string) {
     // Tìm item để xác định type
     const item = items.find(i => i.id === itemId);
     if (!item) {
-      alert('Không tìm thấy item để xóa');
+      alert(translate('toast.cantFindItemToDelete'));
       return;
     }
     
-    const itemType = item.type === 'file' ? (t?.('common.file') || 'file') : (t?.('common.folder') || 'folder');
-    if (!window.confirm(`Bạn chắc chắn muốn xóa ${itemType} "${item.name}" này?`)) return;
+    const itemType = item.type === 'file' ? translate('common.file') : translate('common.folder');
+    if (!window.confirm(translate('confirmations.confirmDeleteItem', { itemType, name: item.name }))) return;
     
     const token = localStorage.getItem("token");
     
@@ -364,13 +375,13 @@ export function useFileManager(t?: (key: string) => string) {
       let res;
       
       if (item.type === 'file') {
-        // Xóa file
+        // Delete file
         res = await fetch(`/api/files/${itemId}/delete`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        // Xóa folder
+        // Delete folder
         res = await fetch(`/api/folders?id=${itemId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -380,21 +391,21 @@ export function useFileManager(t?: (key: string) => string) {
       const data = await res.json();
       
       if (!res.ok) {
-        alert(`Xóa ${itemType} thất bại: ${data.error || 'Unknown error'}`);
+        alert(translate('errors.deleteFailed', { itemType, error: data.error || 'Unknown error' }));
         return;
       }
       
-      // Refresh danh sách sau khi xóa thành công
+      // Refresh list after successful deletion
       fetchItems(currentFolder);
       
-      // Nếu xóa folder thì cũng cần refresh folder tree
+      // Refresh folder tree if deleting folder
       if (item.type === 'folder') {
         fetchFolderTree();
       }
       
     } catch (error) {
       console.error('Delete error:', error);
-      alert(`Xóa ${itemType} thất bại: Có lỗi xảy ra`);
+      alert(translate('errors.deleteFailedGeneric', { itemType }));
     }
   };
 

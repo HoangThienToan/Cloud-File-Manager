@@ -1,17 +1,17 @@
-// GET: Trả về danh sách path thư mục cho autocomplete
+// GET: Return folder path list for autocomplete
 export async function GET_AUTOCOMPLETE_PATH(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    // Lấy tất cả path thư mục của user
+    // Get all folder paths of user
     const folders = await prisma.folder.findMany({
       where: { userId: user.id },
       select: { path: true },
       orderBy: { path: 'asc' },
     });
-    // Trả về mảng path
+    // Return path array
     const paths = folders.map((f: { path: string }) => f.path);
     return NextResponse.json({ paths });
   } catch (error) {
@@ -19,7 +19,7 @@ export async function GET_AUTOCOMPLETE_PATH(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch autocomplete paths' }, { status: 500 });
   }
 }
-// PATCH: Đổi tên thư mục
+// PATCH: Rename folder
 export async function PATCH(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser(request);
@@ -29,18 +29,18 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { id, name, path } = body;
     if (!id || (!name && !path)) {
-      return NextResponse.json({ error: 'Thiếu id hoặc tên/path mới' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing id or new name/path' }, { status: 400 });
     }
-    // Kiểm tra quyền sở hữu
+    // Check ownership
     const folder = await prisma.folder.findFirst({ where: { id, userId: user.id } });
     if (!folder) {
-      return NextResponse.json({ error: 'Thư mục không tồn tại' }, { status: 404 });
+      return NextResponse.json({ error: 'Folder not found' }, { status: 404 });
     }
-    // Đổi tên thư mục (giữ nguyên logic cũ)
+    // Rename folder (keep original logic)
     if (name && !path) {
       const parentId = folder.parentId;
       const nameLower = name.trim().toLowerCase();
-      // Kiểm tra trùng tên thư mục
+      // Check duplicate folder name
       const dupFolders = await prisma.folder.findMany({
         where: {
           userId: user.id,
@@ -49,9 +49,9 @@ export async function PATCH(request: NextRequest) {
         },
       });
       if (dupFolders.some((f: { name: string }) => f.name.trim().toLowerCase() === nameLower)) {
-        return NextResponse.json({ error: 'Đã có thư mục cùng tên trong thư mục này!' }, { status: 400 });
+        return NextResponse.json({ error: 'thư mục cùng tên' }, { status: 400 });
       }
-      // Kiểm tra trùng tên tệp
+      // Check duplicate file name
       const dupFiles = await prisma.file.findMany({
         where: {
           userId: user.id,
@@ -59,13 +59,13 @@ export async function PATCH(request: NextRequest) {
         },
       });
       if (dupFiles.some((f: { name: string }) => f.name.trim().toLowerCase() === nameLower)) {
-        return NextResponse.json({ error: 'Đã có tệp cùng tên trong thư mục này!' }, { status: 400 });
+        return NextResponse.json({ error: 'tệp cùng tên' }, { status: 400 });
       }
-      // Đổi tên và cập nhật path cho thư mục này và các thư mục con
+      // Rename and update path for this folder and sub-folders
       const oldPath = folder.path;
       const newPath = oldPath.split('/').slice(0, -1).concat(name).join('/');
       await prisma.folder.update({ where: { id }, data: { name, path: newPath } });
-      // Cập nhật path cho các thư mục con
+      // Update path for sub-folders
       const subfolders = await prisma.folder.findMany({
         where: { userId: user.id, path: { startsWith: oldPath + '/' } },
       });
@@ -73,19 +73,19 @@ export async function PATCH(request: NextRequest) {
         const updatedPath = sub.path.replace(oldPath + '/', newPath + '/');
         await prisma.folder.update({ where: { id: sub.id }, data: { path: updatedPath } });
       }
-      return NextResponse.json({ message: 'Đổi tên thành công' });
+      return NextResponse.json({ message: 'Rename successful' });
     }
-    // Di chuyển thư mục (theo path)
+    // Move folder (by path)
     if (path) {
       const targetPath = path.trim().replace(/\/+$/, '');
       if (!targetPath) {
-        return NextResponse.json({ error: 'Đường dẫn đích không hợp lệ' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid target path' }, { status: 400 });
       }
-      // Không cho di chuyển vào chính nó hoặc thư mục con của nó
+      // Don't allow moving into itself or its sub-folders
       if (targetPath === folder.path || targetPath.startsWith(folder.path + '/')) {
-        return NextResponse.json({ error: 'Không thể di chuyển vào chính nó hoặc thư mục con' }, { status: 400 });
+        return NextResponse.json({ error: 'Cannot move into itself or sub-folder' }, { status: 400 });
       }
-      // Tìm thư mục đích
+      // Find target folder
       const destFolder = await prisma.folder.findFirst({ where: { userId: user.id, path: targetPath } });
       let newParentId: string | null = null;
       let newPath: string;
@@ -93,14 +93,14 @@ export async function PATCH(request: NextRequest) {
         newParentId = destFolder.id;
         newPath = destFolder.path + '/' + folder.name;
       } else if (targetPath === folder.name) {
-        // Di chuyển về gốc, giữ tên cũ
+        // Move to root, keep old name
         newParentId = null;
         newPath = folder.name;
       } else {
-        // Không tìm thấy thư mục đích
-        return NextResponse.json({ error: 'Thư mục đích không tồn tại' }, { status: 400 });
+        // Target folder not found
+        return NextResponse.json({ error: 'Target folder not found' }, { status: 400 });
       }
-      // Kiểm tra trùng tên trong thư mục đích
+      // Check duplicate name in target folder
       const dupFolders = await prisma.folder.findMany({
         where: {
           userId: user.id,
@@ -109,9 +109,9 @@ export async function PATCH(request: NextRequest) {
         },
       });
       if (dupFolders.some((f: { name: string }) => f.name.trim().toLowerCase() === folder.name.trim().toLowerCase())) {
-        return NextResponse.json({ error: 'Đã có thư mục cùng tên trong thư mục đích!' }, { status: 400 });
+        return NextResponse.json({ error: 'thư mục cùng tên' }, { status: 400 });
       }
-      // Kiểm tra trùng tên tệp trong thư mục đích
+      // Check duplicate file name in target folder
       const dupFiles = await prisma.file.findMany({
         where: {
           userId: user.id,
@@ -119,27 +119,27 @@ export async function PATCH(request: NextRequest) {
         },
       });
       if (dupFiles.some((f: { name: string }) => f.name.trim().toLowerCase() === folder.name.trim().toLowerCase())) {
-        return NextResponse.json({ error: 'Đã có tệp cùng tên trong thư mục đích!' }, { status: 400 });
+        return NextResponse.json({ error: 'tệp cùng tên' }, { status: 400 });
       }
-      // Cập nhật parentId và path cho thư mục này và các thư mục con
+      // Update parentId and path for this folder and sub-folders
       const oldPath = folder.path;
       await prisma.folder.update({ where: { id }, data: { parentId: newParentId, path: newPath } });
-      // Cập nhật path cho các thư mục con
+      // Update path for sub-folders
       const subfolders = await prisma.folder.findMany({ where: { userId: user.id, path: { startsWith: oldPath + '/' } } });
       for (const sub of subfolders) {
         const updatedPath = sub.path.replace(oldPath + '/', newPath + '/');
         await prisma.folder.update({ where: { id: sub.id }, data: { path: updatedPath } });
       }
-      return NextResponse.json({ message: 'Di chuyển thành công' });
+      return NextResponse.json({ message: 'Move successful' });
     }
-    return NextResponse.json({ error: 'Yêu cầu không hợp lệ' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   } catch (error) {
     console.error('Rename/Move folder error:', error);
-    return NextResponse.json({ error: 'Đổi tên/di chuyển thất bại' }, { status: 500 });
+    return NextResponse.json({ error: 'Rename/move failed' }, { status: 500 });
   }
 }
 
-// DELETE: Xóa thư mục (và toàn bộ thư mục con, file con)
+// DELETE: Delete folder (and all sub-folders, files)
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser(request);
@@ -149,25 +149,25 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ error: 'Thiếu id thư mục' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing folder id' }, { status: 400 });
     }
-    // Kiểm tra quyền sở hữu
+    // Check ownership
     const folder = await prisma.folder.findFirst({ where: { id, userId: user.id } });
     if (!folder) {
-      return NextResponse.json({ error: 'Thư mục không tồn tại' }, { status: 404 });
+      return NextResponse.json({ error: 'Folder not found' }, { status: 404 });
     }
-    // Xóa tất cả file trong thư mục này và các thư mục con
+    // Delete all files in this folder and sub-folders
     const allFolders = await prisma.folder.findMany({ where: { userId: user.id, path: { startsWith: folder.path } }, select: { id: true } });
     const allFolderIds = allFolders.map((f: { id: string }) => f.id).concat([id]);
     await prisma.file.deleteMany({ where: { userId: user.id, folderId: { in: allFolderIds } } });
-    // Xóa các thư mục con
+    // Delete sub-folders
     await prisma.folder.deleteMany({ where: { userId: user.id, path: { startsWith: folder.path + '/' } } });
-    // Xóa chính thư mục này
+    // Delete this folder itself
     await prisma.folder.delete({ where: { id } });
-    return NextResponse.json({ message: 'Xóa thư mục thành công' });
+    return NextResponse.json({ message: 'Delete folder successful' });
   } catch (error) {
     console.error('Delete folder error:', error);
-    return NextResponse.json({ error: 'Xóa thư mục thất bại' }, { status: 500 });
+    return NextResponse.json({ error: 'Delete folder failed' }, { status: 500 });
   }
 }
 import { NextRequest, NextResponse } from 'next/server'

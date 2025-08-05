@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useTheme } from './ThemeProvider'
 import { Button } from './UI'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface HeaderProps {
   title?: string
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export default function Header({ title = 'Cloud Storage', actions }: HeaderProps) {
   const { theme, setTheme, resolvedTheme } = useTheme()
+  const { t } = useLanguage()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -111,7 +113,7 @@ export default function Header({ title = 'Cloud Storage', actions }: HeaderProps
                   className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
                 >
                   <span>🚪</span>
-                  <span>Đăng xuất</span>
+                  <span>{t('fileTable.logout')}</span>
                 </button>
               </div>
             )}

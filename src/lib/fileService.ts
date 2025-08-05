@@ -1,3 +1,5 @@
+import { translate } from './i18n';
+
 // Backend service for file/folder operations
 export class FileService {
   private static getAuthHeaders() {
@@ -22,7 +24,7 @@ export class FileService {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Download failed:', error);
-      throw new Error('Tải xuống thất bại');
+      throw new Error(translate('errors.downloadFailed'));
     }
   }
 
@@ -37,7 +39,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Đổi tên thất bại');
+        throw new Error(data.error || translate('renameFailed'));
       }
       return data;
     } catch (error) {
@@ -57,7 +59,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Đổi tên thất bại');
+        throw new Error(data.error || translate('renameFailed'));
       }
       return data;
     } catch (error) {
@@ -76,7 +78,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Xóa tệp thất bại');
+        throw new Error(data.error || translate('deleteFileFailed'));
       }
     } catch (error) {
       console.error('Delete file failed:', error);
@@ -94,7 +96,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Xóa thư mục thất bại');
+        throw new Error(data.error || translate('deleteFolderFailed'));
       }
     } catch (error) {
       console.error('Delete folder failed:', error);
@@ -119,7 +121,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Di chuyển thất bại');
+        throw new Error(data.error || translate('moveFailed'));
       }
     } catch (error) {
       console.error('Move items failed:', error);
@@ -142,7 +144,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Sao chép thất bại');
+        throw new Error(data.error || translate('copyFailed'));
       }
     } catch (error) {
       console.error('Copy items failed:', error);
@@ -161,7 +163,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Nén tệp thất bại');
+        throw new Error(data.error || translate('compressFailed'));
       }
       return data;
     } catch (error) {
@@ -181,7 +183,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Giải nén thất bại');
+        throw new Error(data.error || translate('extractFailed'));
       }
       return data;
     } catch (error) {
@@ -201,7 +203,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Tạo liên kết chia sẻ thất bại');
+        throw new Error(data.error || translate('createShareLinkFailed'));
       }
       return data.shareUrl;
     } catch (error) {
@@ -219,7 +221,7 @@ export class FileService {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Không thể lấy thông tin tệp');
+        throw new Error(data.error || translate('getFileInfoFailed'));
       }
       return data;
     } catch (error) {

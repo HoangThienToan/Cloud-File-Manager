@@ -421,8 +421,8 @@ const FileTable: React.FC<FileTableProps> = ({
                 />
               </th>
             )}
-            <th className="p-2 text-left font-medium text-gray-800 text-sm">Tên tệp</th>
-            <th className="p-2 text-left font-medium text-gray-800 text-sm w-20">Kích thước</th>
+            <th className="p-2 text-left font-medium text-gray-800 text-sm">{t('fileTable.fileName')}</th>
+            <th className="p-2 text-left font-medium text-gray-800 text-sm w-20">{t('fileTable.fileSize')}</th>
             <th className="p-2 text-left font-medium text-gray-800 text-sm w-32">{t('common.date')}</th>
             <th className="p-1 text-center font-medium text-gray-800 text-sm w-12">{t('common.actions')}</th>
           </tr>
@@ -510,7 +510,7 @@ const FileTable: React.FC<FileTableProps> = ({
                             }),
                             actions: {
                               onDelete: () => {
-                                if (window.confirm(`Xác nhận xóa ${allSelectedIds.length} mục đã chọn?`)) {
+                                if (window.confirm(t('settings.confirmDeleteMultiple', { count: allSelectedIds.length }))) {
                                   multiSelectActions?.onDelete?.(allSelectedIds);
                                 }
                               },
@@ -703,7 +703,7 @@ const FileTable: React.FC<FileTableProps> = ({
                             }),
                             actions: {
                               onDelete: () => {
-                                if (window.confirm(`Xác nhận xóa ${allSelectedIds.length} mục đã chọn?`)) {
+                                if (window.confirm(t('settings.confirmDeleteMultiple', { count: allSelectedIds.length }))) {
                                   multiSelectActions?.onDelete?.(allSelectedIds);
                                 }
                               },
@@ -797,16 +797,16 @@ const FileTable: React.FC<FileTableProps> = ({
                               return;
                             }
                             if (renaming.name.trim() !== item.name) {
-                              if (!window.confirm('Xác nhận đổi tên tệp?')) { setRenaming(null); return; }
+                              if (!window.confirm(t('confirmations.renameFile'))) { setRenaming(null); return; }
                               // Check duplicate name
                               const existsFolder = items.some(
                                 (i) => i.name.trim().toLowerCase() === renaming.name.trim().toLowerCase() && i.type === 'folder'
                               );
-                              if (existsFolder) { setError('Đã có thư mục cùng tên trong thư mục này!'); setRenaming(null); return; }
+                              if (existsFolder) { setError(t('fileTable.existsFolderSameName')); setRenaming(null); return; }
                               const existsFile = items.some(
                                 (i) => i.name.trim().toLowerCase() === renaming.name.trim().toLowerCase() && i.id !== item.id && i.type === 'file'
                               );
-                              if (existsFile) { setError('Đã có tệp cùng tên trong thư mục này!'); setRenaming(null); return; }
+                              if (existsFile) { setError(t('fileTable.existsFileSameName')); setRenaming(null); return; }
                               try {
                                 const token = localStorage.getItem('token');
                                 const res = await fetch(`/api/files/${item.id}/rename`, {
@@ -818,7 +818,7 @@ const FileTable: React.FC<FileTableProps> = ({
                                   body: JSON.stringify({ name: renaming.name.trim() }),
                                 });
                                 const data = await res.json();
-                                if (!res.ok) setError(data.error || 'Đổi tên tệp thất bại');
+                                if (!res.ok) setError(data.error || t('errors.renameFileError'));
                                 else fetchItems(currentFolder);
                               } catch { setError(t('errors.renameFileError')); }
                             }

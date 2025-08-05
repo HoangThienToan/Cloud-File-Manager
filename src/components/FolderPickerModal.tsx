@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Item } from './types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FolderPickerModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
   items,
   fetchFolders,
 }) => {
+  const { t } = useLanguage()
   const [folders, setFolders] = useState<Item[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [currentPath, setCurrentPath] = useState<Item[]>([]);
@@ -132,7 +134,7 @@ const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-500">Đang tải...</p>
+              <p className="mt-2 text-gray-500">{t('common.loading')}</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -143,7 +145,7 @@ const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
                   className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-100 rounded"
                 >
                   <span className="text-lg">⬆️</span>
-                  <span className="text-gray-600">.. (Quay lại)</span>
+                  <span className="text-gray-600">{t('fileTable.goBack')}</span>
                 </button>
               )}
               
@@ -158,7 +160,7 @@ const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
               >
                 <span className="text-lg">📂</span>
                 <span className="font-medium">
-                  {currentPath.length > 0 ? 'Thư mục hiện tại' : 'Thư mục gốc'}
+                  {currentPath.length > 0 ? t('fileTable.currentFolder') : t('fileTable.rootFolder')}
                 </span>
               </button>
 
@@ -191,7 +193,7 @@ const FolderPickerModal: React.FC<FolderPickerModalProps> = ({
               {folders.length === 0 && !loading && (
                 <div className="text-center py-8 text-gray-500">
                   <span className="text-4xl block mb-2">📂</span>
-                  Không có thư mục con
+                  {t('fileTable.noChildFolders')}
                 </div>
               )}
             </div>

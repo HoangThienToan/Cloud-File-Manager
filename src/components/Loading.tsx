@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -25,7 +26,9 @@ interface LoadingOverlayProps {
   className?: string
 }
 
-export function LoadingOverlay({ message = 'Đang tải...', className = '' }: LoadingOverlayProps) {
+export function LoadingOverlay({ message, className = '' }: LoadingOverlayProps) {
+  const { t } = useLanguage()
+  const displayMessage = message || t('common.loading')
   return (
     <div className={`
       fixed inset-0 bg-gray-500/30 backdrop-blur-sm z-50
@@ -51,12 +54,14 @@ interface LoadingStateProps {
 }
 
 export function LoadingState({ loading, message, children }: LoadingStateProps) {
+  const { t } = useLanguage()
+  
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <LoadingSpinner size="lg" className="mb-4" />
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          {message || 'Đang tải...'}
+          {message || t('common.loading')}
         </p>
       </div>
     )

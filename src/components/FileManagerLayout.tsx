@@ -691,9 +691,9 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
                     onChange={(e) => setSortBy(e.target.value as 'name' | 'size' | 'date')}
                     className="text-sm border border-gray-300 rounded px-2 py-1"
                   >
-                    <option value="name">Tên</option>
-                    <option value="size">Kích thước</option>
-                    <option value="date">Ngày</option>
+                    <option value="name">{t('common.name')}</option>
+                    <option value="size">{t('common.size')}</option>
+                    <option value="date">{t('common.date')}</option>
                   </select>
                   <button
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
@@ -759,10 +759,10 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
                         />
                       </th>
                     )}
-                    <th className="text-left p-3 border-b font-medium text-gray-700">Tên</th>
-                    <th className="text-left p-3 border-b font-medium text-gray-700">Kích thước</th>
-                    <th className="text-left p-3 border-b font-medium text-gray-700">Ngày sửa đổi</th>
-                    <th className="text-left p-3 border-b font-medium text-gray-700">Thao tác</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">{t('common.name')}</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">{t('common.size')}</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">{t('common.date')}</th>
+                    <th className="text-left p-3 border-b font-medium text-gray-700">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -836,7 +836,7 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
                             )}
                             <button
                               onClick={() => {
-                                if (window.confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
+                                if (window.confirm(t('settings.confirmDeleteItem', { name: item.name }))) {
                                   props.handleDelete(item.id);
                                 }
                               }}
@@ -854,13 +854,13 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
                         {props.loading ? (
                           <div className="flex items-center justify-center gap-2">
                             <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <span>Đang tải...</span>
+                            <span>{t('common.loading')}</span>
                           </div>
                         ) : searchTerm ? (
                           <div>
                             <div className="text-4xl mb-4">🔍</div>
-                            <div className="text-gray-500 text-lg">Không tìm thấy kết quả</div>
-                            <div className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác</div>
+                            <div className="text-gray-500 text-lg">{t('fileTable.noResultsFound')}</div>
+                            <div className="text-sm text-gray-400 mt-2">{t('fileTable.tryDifferentKeywords')}</div>
                           </div>
                         ) : (
                           <div>
@@ -991,18 +991,18 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
                   {props.loading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-gray-600">Đang tải...</span>
+                      <span className="text-gray-600">{t('common.loading')}</span>
                     </div>
                   ) : searchTerm ? (
                     <div>
                       <div className="text-4xl mb-4">🔍</div>
-                      <div className="text-gray-500 text-lg">Không tìm thấy kết quả</div>
-                      <div className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác</div>
+                      <div className="text-gray-500 text-lg">{t('fileTable.noResultsFound')}</div>
+                      <div className="text-sm text-gray-400 mt-2">{t('fileTable.tryDifferentKeywords')}</div>
                     </div>
                   ) : (
                     <div>
                       <div className="text-6xl mb-4">📂</div>
-                      <div className="text-gray-500 text-lg">Thư mục trống</div>
+                      <div className="text-gray-500 text-lg">{t('fileTable.emptyFolder')}</div>
                       <div className="text-sm text-gray-400 mt-2">{t('fileManager.emptyFolderDescription')}</div>
                     </div>
                   )}
@@ -1072,7 +1072,7 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[80vh] overflow-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Phím tắt</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{t('shortcuts.title')}</h3>
                 <button
                   onClick={() => setShowKeyboardHelp(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1085,62 +1085,62 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
               
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Điều hướng & Chọn</h4>
+                  <h4 className="font-medium text-gray-800 mb-2">{t('shortcuts.navigationAndSelection')}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex justify-between">
-                      <span>Chọn tất cả</span>
+                      <span>{t('common.selectAll')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+A</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Xóa đã chọn</span>
+                      <span>{t('common.deleteAll')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Delete</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Bỏ chọn / Thoát</span>
+                      <span>{t('common.deselectExit')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Esc</kbd>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Tìm kiếm & Lọc</h4>
+                  <h4 className="font-medium text-gray-800 mb-2">{t('shortcuts.searchAndFilter')}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex justify-between">
-                      <span>Tìm kiếm</span>
+                      <span>{t('common.search')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Ctrl+F</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Sắp xếp theo tên</span>
+                      <span>{t('shortcuts.sortByName')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">1</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Sắp xếp theo kích thước</span>
+                      <span>{t('shortcuts.sortBySize')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">2</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Sắp xếp theo ngày</span>
+                      <span>{t('shortcuts.sortByDate')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">3</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Đảo thứ tự</span>
+                      <span>{t('shortcuts.reverseOrder')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">R</kbd>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Chế độ xem</h4>
+                  <h4 className="font-medium text-gray-800 mb-2">{t('shortcuts.viewMode')}</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex justify-between">
-                      <span>Chuyển chế độ xem</span>
+                      <span>{t('shortcuts.switchViewMode')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">V</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Chế độ chọn nhiều</span>
+                      <span>{t('common.multiSelect')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">M</kbd>
                     </div>
                     <div className="flex justify-between">
-                      <span>Hiện trợ giúp</span>
+                      <span>{t('shortcuts.help')}</span>
                       <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">F1</kbd>
                     </div>
                   </div>
@@ -1148,7 +1148,7 @@ const FileManagerLayout: React.FC<FileManagerLayoutProps> = (props) => {
 
                 <div className="pt-3 border-t">
                   <p className="text-xs text-gray-500">
-                    💡 Mẹo: Giữ Ctrl và click để chọn nhiều mục, hoặc Shift+Click để chọn dải mục
+                    {t('fileTable.multiSelectTip')}
                   </p>
                 </div>
               </div>

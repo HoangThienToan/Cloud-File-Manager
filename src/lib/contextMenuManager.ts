@@ -2,6 +2,7 @@ import { FileService } from './fileService';
 import { Item } from '../components/types';
 import { StateManager } from './stateManager';
 import { globalStateManager } from './globalStateManager';
+import { translate } from './i18n';
 
 export interface ContextMenuAction {
   label: string;
@@ -169,7 +170,7 @@ export class ContextMenuManager {
 
     return [
       {
-        label: `Đã chọn ${items.length} mục`,
+        label: translate('selectedItems', { count: items.length }),
         icon: '✅',
         onClick: () => {},
         disabled: true,
@@ -186,7 +187,7 @@ export class ContextMenuManager {
         onClick: () => this.downloadMultipleFiles(items.filter(item => item.type === 'file')),
       }] : []),
       {
-        label: 'Di chuyển',
+        label: translate('moveButton'),
         icon: '📁',
         onClick: () => this.moveMultipleItems(items),
       },
@@ -207,7 +208,7 @@ export class ContextMenuManager {
         separator: true,
       },
       {
-        label: 'Xóa tất cả',
+        label: translate('deleteAll'),
         icon: '🗑️',
         onClick: () => this.deleteMultipleItems(items),
         danger: true,
@@ -222,19 +223,19 @@ export class ContextMenuManager {
       const userBucket = await this.getUserDefaultBucket()
       
       if (userBucket) {
-        // Tạo clean URL với bucket
+        // Create clean URL with bucket
         const bucketUrl = `${window.location.origin}/${userBucket.name}/${file.name}`
         window.open(bucketUrl, '_blank')
-        this.onSuccess('Đã mở tệp', `Using bucket: ${userBucket.name}`)
+        this.onSuccess(translate('fileOpened'), translate('usingBucket', { bucketName: userBucket.name }))
       } else {
         // Fallback về URL cũ nếu chưa có bucket
         const publicUrl = `/api/file-public?id=${file.id}`
         window.open(publicUrl, '_blank')
-        this.onSuccess('Đã mở tệp', file.name)
+        this.onSuccess(translate('fileOpened'), file.name)
       }
     } catch (error) {
       console.error('Open file error:', error)
-      this.onError('Không thể mở tệp')
+      this.onError(translate('cannotOpenFile'))
     }
   }
 
@@ -258,9 +259,9 @@ export class ContextMenuManager {
   private async downloadFile(file: Item) {
     try {
       await FileService.downloadFile(file.id, file.name);
-      this.onSuccess('Tải xuống thành công', file.name);
+      this.onSuccess(translate('downloadSuccess'), file.name);
     } catch (error) {
-      this.onError('Tải xuống thất bại');
+      this.onError(translate('downloadFailed'));
     }
   }
 
@@ -272,34 +273,34 @@ export class ContextMenuManager {
   }
 
   private async deleteFile(file: Item) {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa tệp "${file.name}"?`)) return;
+    if (!window.confirm(translate('confirmDeleteFile', { fileName: file.name }))) return;
     
     // Optimistically remove from file table only
     globalStateManager.updateFileTable('delete', [file]);
     
     try {
       await FileService.deleteFile(file.id);
-      this.onSuccess('Đã xóa tệp', file.name);
+      this.onSuccess(translate('fileDeleted'), file.name);
       // No need to refresh - already removed optimistically
     } catch (error) {
-      this.onError('Xóa tệp thất bại');
+      this.onError(translate('deleteFileFailed'));
       // Revert optimistic update by refreshing file table only
       globalStateManager.refreshComponent('file-table');
     }
   }
 
   private async deleteFolder(folder: Item) {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa thư mục "${folder.name}"?`)) return;
+    if (!window.confirm(translate('confirmDeleteFolder', { folderName: folder.name }))) return;
     
     // Optimistically remove from both table and tree
     globalStateManager.updateBoth('delete', [folder]);
     
     try {
       await FileService.deleteFolder(folder.id);
-      this.onSuccess('Đã xóa thư mục', folder.name);
+      this.onSuccess(translate('folderDeleted'), folder.name);
       // No need to refresh - already removed optimistically
     } catch (error) {
-      this.onError('Xóa thư mục thất bại');
+      this.onError(translate('deleteFolderFailed'));
       // Revert optimistic update by refreshing both components
       globalStateManager.refreshComponent('file-table');
       globalStateManager.refreshComponent('folder-tree');
@@ -315,7 +316,7 @@ export class ContextMenuManager {
 
   private copyFile(file: Item) {
     this.onShowModal('folderPicker', {
-      title: 'Sao chép tệp',
+      title: translate('copyFileTitle'),
       confirmText: this.t('common.copy'),
       items: [file],
       action: 'copy'
@@ -324,7 +325,7 @@ export class ContextMenuManager {
 
   private copyFolder(folder: Item) {
     this.onShowModal('folderPicker', {
-      title: 'Sao chép thư mục',
+      title: translate('copyFolderTitle'),
       confirmText: this.t('common.copy'),
       items: [folder],
       action: 'copy'
@@ -333,8 +334,8 @@ export class ContextMenuManager {
 
   private moveFile(file: Item) {
     this.onShowModal('folderPicker', {
-      title: 'Di chuyển tệp',
-      confirmText: 'Di chuyển',
+      title: translate('moveFileTitle'),
+      confirmText: translate('moveButton'),
       items: [file],
       action: 'move',
       onConfirm: (targetFolderId: string | null) => this.handleMoveAction([file], targetFolderId)
@@ -343,8 +344,8 @@ export class ContextMenuManager {
 
   private moveFolder(folder: Item) {
     this.onShowModal('folderPicker', {
-      title: 'Di chuyển thư mục',
-      confirmText: 'Di chuyển',
+      title: translate('moveFolderTitle'),
+      confirmText: translate('moveButton'),
       items: [folder],
       action: 'move',
       onConfirm: (targetFolderId: string | null) => this.handleMoveAction([folder], targetFolderId)
@@ -354,7 +355,7 @@ export class ContextMenuManager {
   private async extractFile(file: Item) {
     try {
       const result = await FileService.extractFile(file.id, null);
-      this.onSuccess('Giải nén thành công', `Đã giải nén ${result.files.length} tệp`);
+      this.onSuccess(translate('extractSuccess'), translate('extractedFiles', { count: result.files.length }));
       
       // Add extracted files to file table only
       if (result.files) {
@@ -363,7 +364,7 @@ export class ContextMenuManager {
         globalStateManager.refreshComponent('file-table');
       }
     } catch (error) {
-      this.onError('Giải nén thất bại');
+      this.onError(translate('extractFailedError'));
     }
   }
 
@@ -371,18 +372,18 @@ export class ContextMenuManager {
     try {
       const shareUrl = await FileService.createShareLink(file.id);
       await navigator.clipboard.writeText(shareUrl);
-      this.onSuccess('Liên kết chia sẻ đã được sao chép', 'Paste để chia sẻ với người khác');
+      this.onSuccess(translate('shareLinkCopied'), translate('shareLinkPasteHint'));
     } catch (error) {
-      this.onError('Tạo liên kết chia sẻ thất bại');
+      this.onError(translate('createShareLinkFailedError'));
     }
   }
 
   private async showFileInfo(file: Item) {
     try {
       const info = await FileService.getFileInfo(file.id);
-      alert(`Thông tin tệp:\nTên: ${info.name}\nKích thước: ${info.size}\nTạo: ${new Date(info.createdAt).toLocaleString()}`);
+      alert(translate('fileInfoAlert', { name: info.name, size: info.size, created: new Date(info.createdAt).toLocaleString() }));
     } catch (error) {
-      this.onError('Không thể lấy thông tin tệp');
+      this.onError(translate('getFileInfoFailedError'));
     }
   }
 
@@ -395,13 +396,13 @@ export class ContextMenuManager {
         console.error(`Failed to download ${file.name}`);
       }
     }
-    this.onSuccess('Tải xuống hoàn tất', `Đã tải ${files.length} tệp`);
+    this.onSuccess(translate('downloadComplete'), translate('downloadedFiles', { count: files.length }));
   }
 
   private moveMultipleItems(items: Item[]) {
     this.onShowModal('folderPicker', {
-      title: `Di chuyển ${items.length} mục`,
-      confirmText: 'Di chuyển',
+      title: translate('moveMultipleTitle', { count: items.length }),
+      confirmText: translate('moveButton'),
       items,
       action: 'move',
       onConfirm: (targetFolderId: string | null) => this.handleMoveAction(items, targetFolderId)
@@ -410,7 +411,7 @@ export class ContextMenuManager {
 
   private copyMultipleItems(items: Item[]) {
     this.onShowModal('folderPicker', {
-      title: `Sao chép ${items.length} mục`,
+      title: translate('copyMultipleTitle', { count: items.length }),
       confirmText: this.t('common.copy'),
       items,
       action: 'copy'
@@ -423,17 +424,17 @@ export class ContextMenuManager {
 
     try {
       const result = await FileService.compressFiles(fileIds, zipName);
-      this.onSuccess('Nén thành công', `Đã tạo ${result.file.name}`);
+      this.onSuccess(translate('compressSuccess'), translate('compressedFile', { fileName: result.file.name }));
       
       // Add zip file to file table only
       globalStateManager.updateFileTable('add', [result.file]);
     } catch (error) {
-      this.onError('Nén tệp thất bại');
+      this.onError(translate('compressFailedError'));
     }
   }
 
   private async deleteMultipleItems(items: Item[]) {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${items.length} mục đã chọn?`)) return;
+    if (!window.confirm(translate('confirmDeleteMultiple', { count: items.length }))) return;
 
     // Optimistically remove from appropriate components
     const files = items.filter(item => item.type === 'file');
@@ -457,10 +458,10 @@ export class ContextMenuManager {
         await FileService.deleteFolder(folder.id);
       }
 
-      this.onSuccess('Xóa thành công', `Đã xóa ${items.length} mục`);
+      this.onSuccess(translate('deleteMultipleSuccess'), translate('deletedMultipleItems', { count: items.length }));
       // No need to refresh - already removed optimistically
     } catch (error) {
-      this.onError('Xóa thất bại');
+      this.onError(translate('deleteMultipleFailed'));
       // Revert optimistic update by refreshing relevant components
       globalStateManager.refreshComponent('file-table');
       if (folders.length > 0) {
@@ -486,11 +487,11 @@ export class ContextMenuManager {
       // Call the actual move API
       await FileService.moveItems(itemIds, targetFolderId);
       
-      const targetName = targetFolderId ? 'thư mục đích' : 'thư mục gốc';
-      this.onSuccess('Di chuyển thành công', `Đã di chuyển ${items.length} mục đến ${targetName}`);
+      const targetName = targetFolderId ? translate('targetFolder') : translate('rootFolder');
+      this.onSuccess(translate('moveMultipleSuccess'), translate('movedMultipleItems', { count: items.length, target: targetName }));
       
     } catch (error) {
-      this.onError('Di chuyển thất bại');
+      this.onError(translate('moveMultipleFailed'));
       // Revert optimistic update by refreshing components
       globalStateManager.refreshComponent('file-table');
       if (items.some(item => item.type === 'folder')) {

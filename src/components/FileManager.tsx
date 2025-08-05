@@ -694,7 +694,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                       }}
                       className="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700 transition-colors"
                     >
-                      🗑️ Xóa
+                      🗑️ {t('delete')}
                     </button>
                   </div>
                 </div>
@@ -707,7 +707,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                   <div className="text-sm text-gray-400 mt-2">{t('fileManager.emptyFolderDescription')}</div>
                   <div className="text-xs text-gray-400 mt-4 space-y-1">
                     <div>{t('fileManager.tips')}</div>
-                    <div>🗜️ Nén: Chỉ với files/folders thường (không nén file ZIP)</div>
+                    <div>{t('fileManager.compressionTip')}</div>
                     <div>{t('fileManager.extractTip')}</div>
                   </div>
                 </div>

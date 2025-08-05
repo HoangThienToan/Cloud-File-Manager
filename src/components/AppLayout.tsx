@@ -251,7 +251,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-lg">📁</span>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Documents</div>
-                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>42 tệp</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('fileTable.fileCount', { count: 42 })}</div>
                     </div>
                   </button>
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
@@ -262,7 +262,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-lg">🖼️</span>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Images</div>
-                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>128 tệp</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('fileTable.fileCount', { count: 128 })}</div>
                     </div>
                   </button>
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
@@ -273,7 +273,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-lg">🎵</span>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Music</div>
-                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>67 tệp</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('fileTable.fileCount', { count: 67 })}</div>
                     </div>
                   </button>
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${
@@ -284,7 +284,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-lg">�</span>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Videos</div>
-                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>23 tệp</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('fileTable.fileCount', { count: 23 })}</div>
                     </div>
                   </button>
                 </div>
