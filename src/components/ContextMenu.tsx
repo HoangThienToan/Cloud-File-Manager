@@ -10,8 +10,8 @@ interface ContextMenuProps {
     onClick?: () => void;
     disabled?: boolean;
     separator?: boolean;
-    danger?: boolean;
-    color?: 'default' | 'blue' | 'green' | 'red' | 'orange' | 'purple';
+    danger?: boolean; // New prop for dangerous actions
+    color?: 'default' | 'blue' | 'green' | 'red' | 'orange' | 'purple'; // New prop for colors
   }>;
 }
 
@@ -40,48 +40,55 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onClose, items }) => {
     };
   }, [onClose]);
 
-  const adjustedX = Math.min(x, window.innerWidth - 250);
+  // Adjust position if menu would go off screen
+  const adjustedX = Math.min(x, window.innerWidth - 220);
   const adjustedY = Math.min(y, window.innerHeight - (items.length * 45));
 
   const getItemColors = (item: any) => {
     if (item.disabled) {
-      return 'text-gray-400 cursor-not-allowed bg-gray-50';
+      return 'text-gray-400 cursor-not-allowed';
     }
     
-    if (item.danger) {
+    if (item.danger || item.color === 'red') {
       return 'text-red-600 hover:bg-red-50 hover:text-red-700';
     }
     
-    const colorMap = {
-      blue: 'text-blue-600 hover:bg-blue-50 hover:text-blue-700',
-      green: 'text-green-600 hover:bg-green-50 hover:text-green-700',
-      red: 'text-red-600 hover:bg-red-50 hover:text-red-700',
-      orange: 'text-orange-600 hover:bg-orange-50 hover:text-orange-700',
-      purple: 'text-purple-600 hover:bg-purple-50 hover:text-purple-700',
-      default: 'text-gray-700 hover:bg-gray-50'
-    };
-    
-    return colorMap[item.color as keyof typeof colorMap || 'default'];
+    switch (item.color) {
+      case 'blue':
+        return 'text-blue-600 hover:bg-blue-50 hover:text-blue-700';
+      case 'green':
+        return 'text-green-600 hover:bg-green-50 hover:text-green-700';
+      case 'orange':
+        return 'text-orange-600 hover:bg-orange-50 hover:text-orange-700';
+      case 'purple':
+        return 'text-purple-600 hover:bg-purple-50 hover:text-purple-700';
+      default:
+        return 'text-gray-700 hover:bg-gray-50';
+    }
   };
 
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-48"
+      className="context-menu fixed bg-white border border-gray-200 rounded-xl shadow-2xl py-2 min-w-[220px] z-50 backdrop-blur-sm animate-in fade-in zoom-in-95 duration-150"
       style={{
         left: adjustedX,
         top: adjustedY,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        border: '1px solid rgba(0, 0, 0, 0.1)',
       }}
     >
-      {items.map((item, index) => {
-        if (item.separator) {
-          return <hr key={index} className="my-1 border-gray-200" />;
-        }
-        
-        return (
+      {items.map((item, index) => (
+        <React.Fragment key={index}>
+          {item.separator && (
+            <div className="my-2 px-3">
+              <hr className="border-gray-200" />
+            </div>
+          )}
           <button
-            key={index}
-            className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-3 ${getItemColors(item)}`}
+            className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-all duration-150 font-medium text-sm rounded-lg mx-2 my-1 ${getItemColors(item)} ${
+              !item.disabled ? 'active:scale-[0.98] transform' : ''
+            }`}
             onClick={() => {
               if (!item.disabled && item.onClick) {
                 item.onClick();
@@ -89,12 +96,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onClose, items }) => {
               }
             }}
             disabled={item.disabled}
+            style={{
+              width: 'calc(100% - 16px)',
+            }}
           >
-            {item.icon && <span className="text-base">{item.icon}</span>}
-            <span>{item.label}</span>
+            {item.icon && (
+              <div className="flex items-center justify-center w-5 h-5">
+                <span className="text-base leading-none">{item.icon}</span>
+              </div>
+            )}
+            <span className="flex-1 leading-none">{item.label}</span>
+            {(item.danger || item.color === 'red') && !item.disabled && (
+              <div className="w-2 h-2 bg-red-400 rounded-full opacity-60"></div>
+            )}
           </button>
-        );
-      })}
+        </React.Fragment>
+      ))}
     </div>
   );
 };

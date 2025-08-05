@@ -1,0 +1,103 @@
+{
+  "common": {
+    "upload": "Upload",
+    "download": "Download",
+    "delete": "Delete",
+    "rename": "Rename",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "search": "Search",
+    "createFolder": "Create Folder",
+    "selectAll": "Select All",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "name": "Name",
+    "size": "Size",
+    "date": "Date",
+    "type": "Type",
+    "actions": "Actions"
+  },
+  "fileManager": {
+    "title": "File Manager",
+    "emptyFolder": "Empty folder",
+    "emptyFolderDescription": "Drag and drop files here or use the \"Upload\" button",
+    "noSearchResults": "No results found",
+    "noSearchResultsDescription": "Try searching with different keywords",
+    "searchPlaceholder": "Search files...",
+    "createNewFolder": "Create New Folder",
+    "folderName": "Folder Name",
+    "enterFolderName": "Enter folder name",
+    "uploadFiles": "Upload Files",
+    "selectFiles": "Select Files"
+  },
+  "sorting": {
+    "nameAsc": "Name A-Z",
+    "nameDesc": "Name Z-A",
+    "sizeAsc": "Size ↑",
+    "sizeDesc": "Size ↓",
+    "dateAsc": "Oldest",
+    "dateDesc": "Newest"
+  },
+  "contextMenu": {
+    "open": "Open",
+    "openFolder": "Open Folder",
+    "rename": "Rename",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste ({{count}} items)",
+    "download": "Download",
+    "delete": "Delete",
+    "deleteSelected": "Delete {{count}} selected items",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"?",
+    "deleteMultipleConfirm": "Are you sure you want to delete {{count}} selected items?"
+  },
+  "keyboard": {
+    "shortcuts": "Keyboard Shortcuts",
+    "navigation": "Navigation & Selection",
+    "searchFilter": "Search & Filter",
+    "viewToggle": "Toggle View Mode",
+    "multiSelectToggle": "Toggle Multi-Select",
+    "help": "Show Help"
+  },
+  "messages": {
+    "uploadSuccess": "Upload successful!",
+    "uploadError": "Error uploading file",
+    "deleteSuccess": "Delete successful!",
+    "deleteError": "Error deleting",
+    "renameSuccess": "Rename successful!",
+    "renameError": "Error renaming",
+    "copySuccess": "Copy successful!",
+    "copyError": "Error copying",
+    "pasteSuccess": "Paste successful!",
+    "pasteError": "Error pasting",
+    "createFolderSuccess": "Folder created successfully!",
+    "createFolderError": "Error creating folder"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "loginSuccess": "Login successful!",
+    "loginError": "Login error",
+    "registerSuccess": "Registration successful!",
+    "registerError": "Registration error"
+  },
+  "clipboard": {
+    "copied": "Copied {{count}} items",
+    "cut": "Cut {{count}} items",
+    "clear": "Clear clipboard"
+  },
+  "language": {
+    "vietnamese": "Tiếng Việt",
+    "english": "English",
+    "switchLanguage": "Switch Language"
+  }
+}

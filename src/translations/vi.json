@@ -1,0 +1,103 @@
+{
+  "common": {
+    "upload": "Tải lên",
+    "download": "Tải xuống",
+    "delete": "Xóa",
+    "rename": "Đổi tên",
+    "copy": "Sao chép",
+    "cut": "Cắt",
+    "paste": "Dán",
+    "search": "Tìm kiếm",
+    "createFolder": "Tạo thư mục",
+    "selectAll": "Chọn tất cả",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "close": "Đóng",
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "confirm": "Xác nhận",
+    "name": "Tên",
+    "size": "Kích thước",
+    "date": "Ngày",
+    "type": "Loại",
+    "actions": "Thao tác"
+  },
+  "fileManager": {
+    "title": "Trình quản lý tệp tin",
+    "emptyFolder": "Thư mục trống",
+    "emptyFolderDescription": "Kéo thả tệp vào đây hoặc sử dụng nút \"Tải lên\"",
+    "noSearchResults": "Không tìm thấy kết quả",
+    "noSearchResultsDescription": "Thử tìm kiếm với từ khóa khác",
+    "searchPlaceholder": "Tìm kiếm tệp...",
+    "createNewFolder": "Tạo thư mục mới",
+    "folderName": "Tên thư mục",
+    "enterFolderName": "Nhập tên thư mục",
+    "uploadFiles": "Tải lên tệp",
+    "selectFiles": "Chọn tệp"
+  },
+  "sorting": {
+    "nameAsc": "Tên A-Z",
+    "nameDesc": "Tên Z-A",
+    "sizeAsc": "Kích thước ↑",
+    "sizeDesc": "Kích thước ↓",
+    "dateAsc": "Cũ nhất",
+    "dateDesc": "Mới nhất"
+  },
+  "contextMenu": {
+    "open": "Mở",
+    "openFolder": "Mở thư mục",
+    "rename": "Đổi tên",
+    "copy": "Sao chép",
+    "cut": "Cắt",
+    "paste": "Dán ({{count}} mục)",
+    "download": "Tải xuống",
+    "delete": "Xóa",
+    "deleteSelected": "Xóa {{count}} mục đã chọn",
+    "deleteConfirm": "Bạn có chắc muốn xóa \"{{name}}\"?",
+    "deleteMultipleConfirm": "Bạn có chắc muốn xóa {{count}} mục đã chọn?"
+  },
+  "keyboard": {
+    "shortcuts": "Phím tắt",
+    "navigation": "Điều hướng & Chọn",
+    "searchFilter": "Tìm kiếm & Lọc",
+    "viewToggle": "Chuyển đổi chế độ xem",
+    "multiSelectToggle": "Bật/tắt chọn nhiều",
+    "help": "Hiển thị trợ giúp"
+  },
+  "messages": {
+    "uploadSuccess": "Tải lên thành công!",
+    "uploadError": "Lỗi khi tải lên tệp",
+    "deleteSuccess": "Xóa thành công!",
+    "deleteError": "Lỗi khi xóa",
+    "renameSuccess": "Đổi tên thành công!",
+    "renameError": "Lỗi khi đổi tên",
+    "copySuccess": "Sao chép thành công!",
+    "copyError": "Lỗi khi sao chép",
+    "pasteSuccess": "Dán thành công!",
+    "pasteError": "Lỗi khi dán",
+    "createFolderSuccess": "Tạo thư mục thành công!",
+    "createFolderError": "Lỗi khi tạo thư mục"
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "loginSuccess": "Đăng nhập thành công!",
+    "loginError": "Lỗi đăng nhập",
+    "registerSuccess": "Đăng ký thành công!",
+    "registerError": "Lỗi đăng ký"
+  },
+  "clipboard": {
+    "copied": "Đã sao chép {{count}} mục",
+    "cut": "Đã cắt {{count}} mục",
+    "clear": "Xóa clipboard"
+  },
+  "language": {
+    "vietnamese": "Tiếng Việt",
+    "english": "English",
+    "switchLanguage": "Chuyển đổi ngôn ngữ"
+  }
+}

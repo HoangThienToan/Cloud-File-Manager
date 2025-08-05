@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import { NotificationProvider } from "@/components/NotificationSystem";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,15 +38,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
-        <ThemeProvider>
-          <NotificationProvider>
-            <ToastProvider>
-              <div className="relative min-h-screen bg-background">
-                {children}
-              </div>
-            </ToastProvider>
-          </NotificationProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <NotificationProvider>
+              <ToastProvider>
+                <div className="relative min-h-screen bg-background">
+                  {children}
+                </div>
+              </ToastProvider>
+            </NotificationProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
