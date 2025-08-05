@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Button, Badge } from './UI'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface FileTableToolbarProps {
   selectedCount: number
@@ -26,6 +27,7 @@ export default function FileTableToolbar({
   onCompressFiles,
   onExtractFile
 }: FileTableToolbarProps) {
+  const { t } = useLanguage()
   const [showCompressModal, setShowCompressModal] = React.useState(false)
   const [zipName, setZipName] = React.useState('')
 
@@ -101,10 +103,10 @@ export default function FileTableToolbar({
                 size="sm"
                 onClick={handleCompress}
                 className="flex items-center space-x-2"
-                title="Nén các file đã chọn thành ZIP"
+                title={t('toolbar.compressSelected')}
               >
                 <span>🗜️</span>
-                <span>Nén ZIP</span>
+                <span>{t('common.compress')}</span>
               </Button>
             )}
 
@@ -115,10 +117,10 @@ export default function FileTableToolbar({
                 size="sm"
                 onClick={handleExtract}
                 className="flex items-center space-x-2"
-                title="Giải nén file ZIP"
+                title={t('toolbar.extractZip')}
               >
                 <span>📦</span>
-                <span>Giải nén</span>
+                <span>{t('common.extract')}</span>
               </Button>
             )}
           </div>
@@ -139,11 +141,11 @@ export default function FileTableToolbar({
           <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-w-90vw">
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                Nén thành file ZIP
+                {t('contextMenu.compressToZip')}
               </h3>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Tên file ZIP:
+                  {t('contextMenu.zipFileName')}
                 </label>
                 <input
                   type="text"
@@ -154,7 +156,7 @@ export default function FileTableToolbar({
                 />
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Sẽ nén {selectedFiles.length} file(s) đã chọn
+                {t('confirmations.compressFiles')}: {selectedFiles.length} file(s)
               </div>
               <div className="flex justify-end space-x-3">
                 <Button
@@ -162,7 +164,7 @@ export default function FileTableToolbar({
                   size="sm"
                   onClick={() => setShowCompressModal(false)}
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   variant="primary"

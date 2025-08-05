@@ -3,6 +3,7 @@ import { Item } from "./types";
 import { useToast } from "./ToastProvider";
 import { useKeyboardShortcuts } from "../lib/useKeyboardShortcuts";
 import { useErrorHandler } from "./ErrorBoundary";
+import { useLanguage } from "@/contexts/LanguageContext";
 import FileTableToolbar from "./FileTableToolbar";
 
 interface MultiSelectActions {
@@ -55,6 +56,7 @@ const FileTable: React.FC<FileTableProps> = ({
 }) => {
   const { success, error: showError, info } = useToast();
   const { handleError } = useErrorHandler();
+  const { t } = useLanguage();
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -368,7 +370,7 @@ const FileTable: React.FC<FileTableProps> = ({
         <div className="bg-gray-50 dark:bg-gray-800/50 border-x border-gray-200 dark:border-gray-700 p-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {isLoading ? 'Đang tải...' : `Đang tải lên ${Math.round(uploadProgress)}%`}
+              {isLoading ? t('common.loading') : t('fileManager.uploadProgress', { progress: Math.round(uploadProgress).toString() })}
             </span>
             {uploadProgress > 0 && (
               <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
@@ -421,8 +423,8 @@ const FileTable: React.FC<FileTableProps> = ({
             )}
             <th className="p-2 text-left font-medium text-gray-800 text-sm">Tên tệp</th>
             <th className="p-2 text-left font-medium text-gray-800 text-sm w-20">Kích thước</th>
-            <th className="p-2 text-left font-medium text-gray-800 text-sm w-32">Ngày tạo</th>
-            <th className="p-1 text-center font-medium text-gray-800 text-sm w-12">Tùy chọn</th>
+            <th className="p-2 text-left font-medium text-gray-800 text-sm w-32">{t('common.date')}</th>
+            <th className="p-1 text-center font-medium text-gray-800 text-sm w-12">{t('common.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -537,7 +539,7 @@ const FileTable: React.FC<FileTableProps> = ({
                               setRenaming({ id: item.id, type: 'folder', name: item.name });
                             },
                             onDelete: () => {
-                              if (window.confirm('Xác nhận xóa thư mục này?')) {
+                              if (window.confirm(t('confirmations.deleteFolder'))) {
                                 console.log('� [FileTable] Starting delete request for folder:', item.id);
                                 multiSelectActions?.onDelete?.([item.id]);
                               }
@@ -589,16 +591,16 @@ const FileTable: React.FC<FileTableProps> = ({
                             }
                             // Nếu tên thay đổi, xác nhận và gửi request
                             if (renaming.name.trim() !== item.name) {
-                              if (!window.confirm('Xác nhận đổi tên thư mục?')) { setRenaming(null); return; }
+                              if (!window.confirm(t('confirmations.renameFolder'))) { setRenaming(null); return; }
                               // Check duplicate name
                               const existsFolder = items.some(
                                 (i) => i.name.trim().toLowerCase() === renaming.name.trim().toLowerCase() && i.id !== item.id && i.type === 'folder'
                               );
-                              if (existsFolder) { setError('Đã có thư mục cùng tên trong thư mục này!'); setRenaming(null); return; }
+                              if (existsFolder) { setError(t('errors.folderExists')); setRenaming(null); return; }
                               const existsFile = items.some(
                                 (i) => i.name.trim().toLowerCase() === renaming.name.trim().toLowerCase() && i.type === 'file'
                               );
-                              if (existsFile) { setError('Đã có tệp cùng tên trong thư mục này!'); setRenaming(null); return; }
+                              if (existsFile) { setError(t('errors.fileExists')); setRenaming(null); return; }
                               try {
                                 const token = localStorage.getItem('token');
                                 const res = await fetch('/api/folders', {
@@ -610,9 +612,9 @@ const FileTable: React.FC<FileTableProps> = ({
                                   body: JSON.stringify({ id: item.id, name: renaming.name.trim() }),
                                 });
                                 const data = await res.json();
-                                if (!res.ok) setError(data.error || 'Đổi tên thất bại');
+                                if (!res.ok) setError(data.error || t('errors.renameFailed'));
                                 else fetchItems(currentFolder);
-                              } catch { setError('Lỗi đổi tên thư mục'); }
+                              } catch { setError(t('errors.renameFolderFailed')); }
                             }
                             setRenaming(null);
                           }}
@@ -629,7 +631,7 @@ const FileTable: React.FC<FileTableProps> = ({
                           <span className={`text-sm font-medium ${selected ? 'text-blue-800' : 'text-gray-900'}`} title={item.name}>
                             {item.name}
                           </span>
-                          <span className="text-xs text-gray-500 block">Thư mục</span>
+                          <span className="text-xs text-gray-500 block">{t('common.folder')}</span>
                         </div>
                       )}
                     </div>
@@ -639,7 +641,7 @@ const FileTable: React.FC<FileTableProps> = ({
                       <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
                       </svg>
-                      <span>Thư mục</span>
+                      <span>{t('common.folder')}</span>
                     </div>
                   </td>
                   <td className="p-2 text-gray-600 text-xs">{new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
@@ -730,7 +732,7 @@ const FileTable: React.FC<FileTableProps> = ({
                               setRenaming({ id: item.id, type: 'file', name: item.name });
                             },
                             onDelete: () => {
-                              if (window.confirm('Xác nhận xóa tệp này?')) {
+                              if (window.confirm(t('confirmations.deleteFile'))) {
                                 console.log('� [FileTable] Starting delete request for file:', item.id);
                                 multiSelectActions?.onDelete?.([item.id]);
                               }
@@ -818,7 +820,7 @@ const FileTable: React.FC<FileTableProps> = ({
                                 const data = await res.json();
                                 if (!res.ok) setError(data.error || 'Đổi tên tệp thất bại');
                                 else fetchItems(currentFolder);
-                              } catch { setError('Lỗi đổi tên tệp'); }
+                              } catch { setError(t('errors.renameFileError')); }
                             }
                             setRenaming(null);
                           }}

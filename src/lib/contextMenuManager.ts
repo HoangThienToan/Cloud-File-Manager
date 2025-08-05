@@ -18,6 +18,7 @@ export class ContextMenuManager {
   private onError: (message: string) => void;
   private onSuccess: (message: string, description?: string) => void;
   private onRename: (item: Item) => void;
+  private t: (key: string) => string;
   private onShowModal: (modalType: string, data: any) => void;
   private stateManager: StateManager;
 
@@ -27,7 +28,8 @@ export class ContextMenuManager {
     onSuccess: (message: string, description?: string) => void,
     onRename: (item: Item) => void,
     onShowModal: (modalType: string, data: any) => void,
-    stateManager: StateManager
+    stateManager: StateManager,
+    t: (key: string) => string
   ) {
     this.onRefresh = onRefresh;
     this.onError = onError;
@@ -35,6 +37,7 @@ export class ContextMenuManager {
     this.onRename = onRename;
     this.onShowModal = onShowModal;
     this.stateManager = stateManager;
+    this.t = t;
   }
 
   // Get context menu for single file
@@ -43,17 +46,17 @@ export class ContextMenuManager {
     
     return [
       {
-        label: 'Mở',
+        label: this.t('common.open'),
         icon: '👁️',
         onClick: () => this.openFile(file),
       },
       {
-        label: 'Tải xuống',
+        label: this.t('common.download'),
         icon: '📥',
         onClick: () => this.downloadFile(file),
       },
       {
-        label: 'Lấy URL',
+        label: this.t('common.getURL'),
         icon: '🔗',
         onClick: () => this.showFileURLs(file),
       },
@@ -64,22 +67,22 @@ export class ContextMenuManager {
         separator: true,
       },
       {
-        label: 'Đổi tên',
+        label: this.t('common.rename'),
         icon: '✏️',
         onClick: () => this.onRename(file),
       },
       {
-        label: 'Sao chép',
+        label: this.t('common.copy'),
         icon: '📋',
         onClick: () => this.copyFile(file),
       },
       {
-        label: 'Di chuyển',
+        label: this.t('common.move'),
         icon: '📁',
         onClick: () => this.moveFile(file),
       },
       ...(isZipFile ? [{
-        label: 'Giải nén',
+        label: this.t('common.extract'),
         icon: '📦',
         onClick: () => this.extractFile(file),
       }] : []),
@@ -90,12 +93,12 @@ export class ContextMenuManager {
         separator: true,
       },
       {
-        label: 'Chia sẻ',
+        label: this.t('common.share'),
         icon: '🔗',
         onClick: () => this.shareFile(file),
       },
       {
-        label: 'Thông tin',
+        label: this.t('common.info'),
         icon: 'ℹ️',
         onClick: () => this.showFileInfo(file),
       },
@@ -106,7 +109,7 @@ export class ContextMenuManager {
         separator: true,
       },
       {
-        label: 'Xóa',
+        label: this.t('common.delete'),
         icon: '🗑️',
         onClick: () => this.deleteFile(file),
         danger: true,
@@ -118,7 +121,7 @@ export class ContextMenuManager {
   getFolderContextMenu(folder: Item): ContextMenuAction[] {
     return [
       {
-        label: 'Mở',
+        label: this.t('common.open'),
         icon: '📂',
         onClick: () => this.openFolder(folder),
       },
@@ -129,17 +132,17 @@ export class ContextMenuManager {
         separator: true,
       },
       {
-        label: 'Đổi tên',
+        label: this.t('common.rename'),
         icon: '✏️',
         onClick: () => this.onRename(folder),
       },
       {
-        label: 'Sao chép',
+        label: this.t('common.copy'),
         icon: '📋',
         onClick: () => this.copyFolder(folder),
       },
       {
-        label: 'Di chuyển',
+        label: this.t('common.move'),
         icon: '📁',
         onClick: () => this.moveFolder(folder),
       },
@@ -150,7 +153,7 @@ export class ContextMenuManager {
         separator: true,
       },
       {
-        label: 'Xóa',
+        label: this.t('common.delete'),
         icon: '🗑️',
         onClick: () => this.deleteFolder(folder),
         danger: true,
@@ -188,12 +191,12 @@ export class ContextMenuManager {
         onClick: () => this.moveMultipleItems(items),
       },
       {
-        label: 'Sao chép',
+        label: this.t('common.copy'),
         icon: '📋',
         onClick: () => this.copyMultipleItems(items),
       },
       ...(hasFiles && fileIds.length > 1 ? [{
-        label: 'Nén thành ZIP',
+        label: this.t('common.zipCreate'),
         icon: '🗜️',
         onClick: () => this.compressFiles(fileIds),
       }] : []),
@@ -313,7 +316,7 @@ export class ContextMenuManager {
   private copyFile(file: Item) {
     this.onShowModal('folderPicker', {
       title: 'Sao chép tệp',
-      confirmText: 'Sao chép',
+      confirmText: this.t('common.copy'),
       items: [file],
       action: 'copy'
     });
@@ -322,7 +325,7 @@ export class ContextMenuManager {
   private copyFolder(folder: Item) {
     this.onShowModal('folderPicker', {
       title: 'Sao chép thư mục',
-      confirmText: 'Sao chép',
+      confirmText: this.t('common.copy'),
       items: [folder],
       action: 'copy'
     });
@@ -408,7 +411,7 @@ export class ContextMenuManager {
   private copyMultipleItems(items: Item[]) {
     this.onShowModal('folderPicker', {
       title: `Sao chép ${items.length} mục`,
-      confirmText: 'Sao chép',
+      confirmText: this.t('common.copy'),
       items,
       action: 'copy'
     });

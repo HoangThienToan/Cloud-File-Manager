@@ -1,9 +1,11 @@
 "use client"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -21,13 +23,13 @@ export default function LoginPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Đăng nhập thất bại')
+        setError(data.error || t('common.loginFailed'))
       } else {
         localStorage.setItem('token', data.token)
         router.push('/')
       }
     } catch (err) {
-      setError('Lỗi kết nối máy chủ')
+      setError(t('common.connectionError'))
     } finally {
       setLoading(false)
     }
@@ -36,21 +38,21 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-6 text-center">Đăng nhập</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">{t('common.loginTitle')}</h1>
         {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
         <div className="mb-4">
-          <label className="block mb-1 font-medium">Email</label>
+          <label className="block mb-1 font-medium">{t('common.email')}</label>
           <input type="email" className="w-full border px-3 py-2 rounded" value={email} onChange={e => setEmail(e.target.value)} required />
         </div>
         <div className="mb-6">
-          <label className="block mb-1 font-medium">Mật khẩu</label>
+          <label className="block mb-1 font-medium">{t('common.password')}</label>
           <input type="password" className="w-full border px-3 py-2 rounded" value={password} onChange={e => setPassword(e.target.value)} required />
         </div>
         <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700" disabled={loading}>
-          {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          {loading ? t('common.loggingIn') : t('common.login')}
         </button>
         <div className="mt-4 text-center text-sm">
-          Chưa có tài khoản? <a href="/register" className="text-blue-600 hover:underline">Đăng ký</a>
+          {t('common.dontHaveAccount')} <a href="/register" className="text-blue-600 hover:underline">{t('common.register')}</a>
         </div>
       </form>
     </div>

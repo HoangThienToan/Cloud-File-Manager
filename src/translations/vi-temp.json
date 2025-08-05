@@ -39,16 +39,6 @@
     "registering": "Registering...",
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
-    "loginFailed": "Login failed",
-    "connectionError": "Connection error",
-    "loginTitle": "Login",
-    "registerFailed": "Registration failed",
-    "registerTitle": "Register",
-    "appTitle": "Cloud File Manager",
-    "notifications": "Notifications",
-    "createBucketTooltip": "Create bucket to share public files",
-    "createBucketButton": "Create Bucket",
-    "quickAccess": "Quick Access",
     "open": "Open",
     "getURL": "Get URL",
     "move": "Move",
@@ -242,9 +232,7 @@
     "renameFailed": "Rename failed",
     "renameFolderError": "Error renaming folder",
     "renameFileFailed": "Rename file failed",
-    "renameFileError": "Error renaming file",
-    "folderCreateFailed": "Cannot create folder: {{error}}",
-    "folderCreateError": "Error creating folder: {{error}}"
+    "renameFileError": "Error renaming file"
   },
   "auth": {
     "login": "Login",

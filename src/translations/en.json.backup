@@ -242,9 +242,7 @@
     "renameFailed": "Rename failed",
     "renameFolderError": "Error renaming folder",
     "renameFileFailed": "Rename file failed",
-    "renameFileError": "Error renaming file",
-    "folderCreateFailed": "Cannot create folder: {{error}}",
-    "folderCreateError": "Error creating folder: {{error}}"
+    "renameFileError": "Error renaming file"
   },
   "auth": {
     "login": "Login",

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage, Language } from '../contexts/LanguageContext';
 
 interface LanguageSwitcherProps {
@@ -10,6 +10,21 @@ interface LanguageSwitcherProps {
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '' }) => {
   const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render until after hydration
+  if (!isMounted) {
+    return (
+      <div className={`w-24 h-10 ${className}`}>
+        {/* Placeholder to prevent layout shift */}
+      </div>
+    );
+  }
 
   const languages: { code: Language; name: string; flag: string }[] = [
     { code: 'vi', name: t('language.vietnamese'), flag: '🇻🇳' },

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FileManagerProps {
   items: any[];
@@ -123,6 +124,7 @@ const getFolderIcon = (node: FolderNode, isExpanded: boolean) => {
 };
 
 function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [contextMenu, setContextMenu] = useState<any>(null);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -138,7 +140,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
       // Create root node
       const rootNode: FolderNode = {
         id: null,
-        name: "Thư mục gốc",
+        name: t('fileManager.rootFolder'),
         parentId: null,
         children: [],
         expanded: true,
@@ -312,7 +314,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
   
   // Get current folder path for breadcrumb
   const getCurrentPath = () => {
-    if (!fileManager?.currentFolder) return [{ id: null, name: "Thư mục gốc" }];
+    if (!fileManager?.currentFolder) return [{ id: null, name: t('fileManager.rootFolder') }];
     
     const path = [];
     let currentId = fileManager.currentFolder;
@@ -328,7 +330,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
     }
     
     // Add root
-    path.unshift({ id: null, name: "Thư mục gốc" });
+    path.unshift({ id: null, name: t('fileManager.rootFolder') });
     return path;
   };
 
@@ -337,7 +339,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
     e.preventDefault();
     const contextMenuItems = [
       {
-        label: item.type === 'folder' ? '📂 Mở thư mục' : '📄 Mở tệp',
+        label: item.type === 'folder' ? t('contextMenu.openFolder') : t('contextMenu.openFile'),
         onClick: () => {
           if (item.type === 'folder' && fileManager) {
             fileManager.setCurrentFolder(item.id);
@@ -349,7 +351,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
         }
       },
       {
-        label: '✏️ Đổi tên',
+        label: t('contextMenu.rename'),
         onClick: () => {
           if (fileManager?.setRenaming) {
             fileManager.setRenaming(item.id);
@@ -358,7 +360,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
         }
       },
       {
-        label: '📋 Sao chép',
+        label: t('contextMenu.copy'),
         onClick: () => {
           navigator.clipboard.writeText(item.name);
           setContextMenu(null);
@@ -387,7 +389,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
     // Add extract option for ZIP files
     if (item.type === 'file' && (item.name.endsWith('.zip') || item.mimeType === 'application/zip')) {
       contextMenuItems.push({
-        label: '📦 Giải nén ZIP',
+        label: t('contextMenu.extractZip'),
         onClick: () => {
           if (fileManager?.handleExtract) {
             fileManager.handleExtract(item.id);
@@ -399,9 +401,9 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
 
     // Add delete option
     contextMenuItems.push({
-      label: '🗑️ Xóa',
+      label: t('contextMenu.delete'),
       onClick: () => {
-        if (confirm(`Bạn có chắc muốn xóa "${item.name}"?`)) {
+        if (confirm(t('contextMenu.deleteConfirm', { name: item.name }))) {
           fileManager?.handleDelete?.(item.id);
         }
         setContextMenu(null);
@@ -480,7 +482,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                   setExpandedFolders(new Set(allFolderIds));
                 }}
                 className="text-xs text-gray-500 hover:text-gray-700 px-1.5 py-1 rounded hover:bg-gray-100"
-                title="Mở rộng tất cả"
+                title={t('contextMenu.expandAll')}
               >
                 ⊞
               </button>
@@ -544,8 +546,8 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-800">
               {fileManager?.currentFolder ? 
-                items.find(i => i.id === fileManager.currentFolder)?.name || 'Thư mục con'
-                : 'Thư mục gốc'
+                items.find(i => i.id === fileManager.currentFolder)?.name || t('fileManager.subFolder')
+                : t('fileManager.rootFolder')
               }
             </h1>
             
@@ -581,7 +583,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
                 disabled={fileManager.uploading}
               >
-                {fileManager.uploading ? "⏳ Đang tải..." : "📤 Tải lên"}
+                {fileManager.uploading ? t('common.uploading') : t('common.upload')}
               </button>
             </form>
           )}
@@ -591,13 +593,13 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
         <div className="p-6">
           {loading && (
             <div className="flex items-center justify-center py-12">
-              <div className="text-blue-600">⏳ Đang tải...</div>
+              <div className="text-blue-600">{t('common.loading')}</div>
             </div>
           )}
           
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <div className="text-red-800">❌ Lỗi: {error}</div>
+              <div className="text-red-800">❌ {t('common.error')}: {error}</div>
             </div>
           )}
           
@@ -608,13 +610,13 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-blue-800 font-medium">
-                      Đã chọn {selectedItems.length} mục
+                      {t('common.selected', { count: selectedItems.length.toString() })}
                     </span>
                     <button
                       onClick={() => setSelectedItems([])}
                       className="text-gray-600 hover:text-gray-800 text-sm px-2 py-1 rounded hover:bg-gray-100"
                     >
-                      ✕ Bỏ chọn
+                      {t('common.deselect')}
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -657,7 +659,7 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                         }}
                         className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
                       >
-                        📦 Giải nén ZIP
+                        {t('contextMenu.extractZip')}
                       </button>
                     )}
                     
@@ -681,11 +683,11 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
                       }}
                       className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
                     >
-                      📋 Sao chép
+                      {t('contextMenu.copy')}
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm(`Bạn có chắc muốn xóa ${selectedItems.length} mục đã chọn?`)) {
+                        if (confirm(t('confirmations.deleteSelectedItems', { count: selectedItems.length.toString() }))) {
                           selectedItems.forEach(id => fileManager?.handleDelete?.(id));
                           setSelectedItems([]);
                         }
@@ -701,12 +703,12 @@ function FileManager({ items, loading, error, fileManager }: FileManagerProps) {
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">📂</div>
-                  <div className="text-gray-500 text-lg">Thư mục trống</div>
-                  <div className="text-sm text-gray-400 mt-2">Kéo thả tệp vào đây hoặc sử dụng nút "Tải lên"</div>
+                  <div className="text-gray-500 text-lg">{t('fileManager.emptyFolder')}</div>
+                  <div className="text-sm text-gray-400 mt-2">{t('fileManager.emptyFolderDescription')}</div>
                   <div className="text-xs text-gray-400 mt-4 space-y-1">
-                    <div>💡 Mẹo: Ctrl+Click để chọn nhiều mục • Chuột phải để hiện menu • Double-click để mở</div>
+                    <div>{t('fileManager.tips')}</div>
                     <div>🗜️ Nén: Chỉ với files/folders thường (không nén file ZIP)</div>
-                    <div>📦 Giải nén: Chỉ hiển thị khi chọn file ZIP</div>
+                    <div>{t('fileManager.extractTip')}</div>
                   </div>
                 </div>
               ) : (

@@ -23,9 +23,11 @@ const translations = {
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>('vi');
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load language from localStorage on mount
+  // Load language from localStorage on mount (client-side only)
   useEffect(() => {
+    setIsHydrated(true);
     if (typeof window !== 'undefined') {
       const savedLanguage = localStorage.getItem('language') as Language;
       if (savedLanguage && (savedLanguage === 'vi' || savedLanguage === 'en')) {

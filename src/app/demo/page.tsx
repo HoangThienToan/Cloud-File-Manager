@@ -9,8 +9,10 @@ import { useFileManager } from "../../lib/useFileManager";
 import FileManagerLayoutNew from "../../components/FileManagerLayoutNew";
 import ContextMenu from "../../components/ContextMenu";
 import AppLayout from "../../components/AppLayout";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function DemoPage() {
+  const { t } = useLanguage();
   const fileManager = useFileManager();
   const [contextMenu, setContextMenu] = React.useState<any>(null);
 
@@ -34,7 +36,7 @@ export default function DemoPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang tải...</p>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -45,7 +47,7 @@ export default function DemoPage() {
       <ToastProvider>
         <ErrorBoundary>
           <AppLayout 
-            currentPath={fileManager.currentFolder ? "Demo - Thư mục con" : "Demo - Trang chủ"}
+            currentPath={fileManager.currentFolder ? `Demo - ${t('fileManager.subFolder')}` : `Demo - ${t('fileManager.rootFolder')}`}
             onUpload={() => {
               if (fileManager.fileInputRef.current) {
                 fileManager.fileInputRef.current.click();

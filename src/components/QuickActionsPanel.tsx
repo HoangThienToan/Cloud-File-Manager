@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface QuickActionsPanelProps {
   isDarkMode: boolean;
@@ -14,6 +15,7 @@ const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
   onCreateFolder,
   onCreateBucket
 }) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const actions = [
@@ -30,7 +32,7 @@ const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
     },
     {
       id: 'folder',
-      label: 'Tạo thư mục',
+      label: t('common.createFolder'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -41,7 +43,7 @@ const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
     },
     {
       id: 'bucket',
-      label: 'Tạo bucket',
+      label: t('common.createBucket'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />

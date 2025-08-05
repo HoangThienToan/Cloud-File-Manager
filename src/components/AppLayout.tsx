@@ -46,7 +46,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col transition-colors duration-200`}>
       {/* Header */}
       <Header 
-        title="Cloud File Manager"
+        title={t('common.appTitle')}
         actions={
           <div className="flex items-center gap-4">
             {/* Search */}
@@ -54,7 +54,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Tìm kiếm tệp..."
+                  placeholder={t('fileManager.searchPlaceholder')}
                   className={`w-64 pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                     isDarkMode 
                       ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
@@ -79,7 +79,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                   ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
-              title="Thông báo"
+              title={t('common.notifications')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM10.5 3.75a6 6 0 1 1 0 12 6 6 0 0 1 0-12zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -97,7 +97,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                   ? 'text-yellow-400 hover:bg-gray-700' 
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
-              title={isDarkMode ? t('common.lightMode') || 'Chế độ sáng' : t('common.darkMode') || 'Chế độ tối'}
+              title={isDarkMode ? t('common.lightMode') : t('common.darkMode')}
             >
               {isDarkMode ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,12 +132,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                   }
                 }}
                 className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-                title="Tạo bucket để chia sẻ file công khai"
+                title={t('common.createBucketTooltip')}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                Tạo Bucket
+                {t('common.createBucketButton')}
               </button>
             
               <button 
@@ -147,7 +147,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Tạo thư mục
+                {t('common.createFolder')}
               </button>
               
               <button 
@@ -157,7 +157,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                Tải lên
+                {t('common.upload')}
               </button>
             </div>
           </div>
@@ -240,7 +240,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
                 <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>
-                  Truy cập nhanh
+                  {t('common.quickAccess')}
                 </h3>
                 <div className="space-y-1">
                   <button className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition-colors ${

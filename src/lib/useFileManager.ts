@@ -25,7 +25,7 @@ export interface FolderItem {
 
 export type Item = (FileItem & { type: 'file' }) | (FolderItem & { type: 'folder' });
 
-export function useFileManager() {
+export function useFileManager(t?: (key: string) => string) {
   const router = useRouter();
   const toast = useToast();
   const [items, setItems] = useState<Item[]>([]);
@@ -355,7 +355,7 @@ export function useFileManager() {
       return;
     }
     
-    const itemType = item.type === 'file' ? 'file' : 'thư mục';
+    const itemType = item.type === 'file' ? (t?.('common.file') || 'file') : (t?.('common.folder') || 'folder');
     if (!window.confirm(`Bạn chắc chắn muốn xóa ${itemType} "${item.name}" này?`)) return;
     
     const token = localStorage.getItem("token");
