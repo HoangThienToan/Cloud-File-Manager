@@ -376,7 +376,9 @@
     "compressToZip": "Compress selected files to ZIP",
     "compress": "Compress",
     "extractZip": "Extract ZIP file",
-    "extract": "Extract"
+    "extract": "Extract",
+    "listView": "List View",
+    "gridView": "Grid View"
   },
   "deleteConfirm": {
     "multipleItems": "Are you sure you want to delete {{count}} selected items?",
